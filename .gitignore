@@ -63,6 +63,7 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
+reference/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -75,6 +76,6 @@ coverage.xml
 *.temp
 *.bak
 
-# Reference data (optional - uncomment if you want to exclude)
-# reference/
+# Reference data
+reference/
 
