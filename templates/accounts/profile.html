@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}내 정보 - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">내 정보</li>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title"><i class="bi bi-person-circle me-2"></i>내 정보</h1>
+
+<div class="row">
+  <div class="col-lg-4 mb-4">
+    <div class="card">
+      <div class="card-body text-center py-4">
+        <div class="user-avatar mx-auto mb-3" style="width: 100px; height: 100px; font-size: 2.5rem;">
+          {{ user.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
+        </div>
+        <h4 class="mb-1">{{ user.get_full_name|default:user.username }}</h4>
+        <p class="text-muted mb-2">{{ user.position|default:"-" }}</p>
+        <span class="badge bg-primary">{{ user.get_role_display }}</span>
+      </div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between">
+          <span class="text-muted">사번</span>
+          <strong>{{ user.employee_id|default:"-" }}</strong>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <span class="text-muted">소속부서</span>
+          <strong>{{ user.department.name|default:"-" }}</strong>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <span class="text-muted">이메일</span>
+          <strong>{{ user.email|default:"-" }}</strong>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <span class="text-muted">연락처</span>
+          <strong>{{ user.phone|default:"-" }}</strong>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-pencil-square me-2"></i>정보 수정
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="last_name" class="form-label">성</label>
+              <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}">
+            </div>
+            <div class="col-md-6">
+              <label for="first_name" class="form-label">이름</label>
+              <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}">
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="email" class="form-label">이메일</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}">
+          </div>
+          
+          <div class="mb-3">
+            <label for="phone" class="form-label">연락처</label>
+            <input type="text" class="form-control" id="phone" name="phone" value="{{ user.phone }}">
+          </div>
+          
+          <div class="mb-3">
+            <label for="position" class="form-label">직위</label>
+            <input type="text" class="form-control" id="position" name="position" value="{{ user.position }}">
+          </div>
+          
+          <div class="d-flex justify-content-end gap-2">
+            <a href="{% url 'dashboard:index' %}" class="btn btn-secondary">취소</a>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i>저장
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+

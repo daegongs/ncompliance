@@ -1,0 +1,381 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'regulations:list' %}">사규 목록</a></li>
+<li class="breadcrumb-item active">{{ title }}</li>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">
+  <i class="bi bi-{% if is_create %}plus-circle{% else %}pencil-square{% endif %} me-2"></i>{{ title }}
+</h1>
+
+<div class="card">
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="row">
+        {% if not is_create and form.code %}
+        <div class="col-md-6 mb-3">
+          <label for="id_code" class="form-label">사규코드</label>
+          {{ form.code }}
+          {% if form.code.errors %}
+          <div class="text-danger small">{{ form.code.errors.0 }}</div>
+          {% endif %}
+          <small class="text-muted">사규코드는 시스템에서 자동으로 부여되며 수정할 수 없습니다.</small>
+        </div>
+        {% else %}
+        <div class="col-md-6 mb-3">
+          <div class="alert alert-info mb-0">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>사규코드는 시스템에서 자동으로 부여됩니다.</strong><br>
+            <small>분류를 선택하면 해당 분류의 다음 번호가 자동으로 할당됩니다.</small>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="col-md-6 mb-3">
+          <label for="id_category" class="form-label">분류 <span class="text-danger">*</span></label>
+          {{ form.category }}
+          {% if form.category.errors %}
+          <div class="text-danger small">{{ form.category.errors.0 }}</div>
+          {% endif %}
+          {% if is_create %}
+          <small class="text-muted">정책/방침: POL-, 규정: REG-, 지침: GDL-, 매뉴얼: MAN- 접두사가 자동 부여됩니다.</small>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-8 mb-3">
+          <label for="id_title" class="form-label">사규명 <span class="text-danger">*</span></label>
+          {{ form.title }}
+          {% if form.title.errors %}
+          <div class="text-danger small">{{ form.title.errors.0 }}</div>
+          {% endif %}
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="id_group" class="form-label">그룹 <span class="text-danger">*</span></label>
+          {{ form.group }}
+          {% if form.group.errors %}
+          <div class="text-danger small">{{ form.group.errors.0 }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="id_description" class="form-label">설명</label>
+        {{ form.description }}
+        {% if form.description.errors %}
+        <div class="text-danger small">{{ form.description.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      {% if is_dept_manager %}
+      <div class="alert alert-info mb-3">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>책임부서담당자</strong>로 로그인하셨습니다. 책임부서는 <strong>{{ user.department.name }}</strong>으로 자동 설정됩니다.
+      </div>
+      {% endif %}
+
+      <div class="row">
+        <div class="col-md-3 mb-3">
+          <label for="id_responsible_dept" class="form-label">책임부서 <span class="text-danger">*</span></label>
+          {% if is_dept_manager %}
+          <input type="text" class="form-control" value="{{ user.department.name }}" readonly disabled>
+          <input type="hidden" name="responsible_dept" value="{{ user.department.pk }}">
+          {% else %}
+          {{ form.responsible_dept }}
+          {% endif %}
+          {% if form.responsible_dept.errors %}
+          <div class="text-danger small">{{ form.responsible_dept.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <label for="id_manager" class="form-label">사규관리 담당자</label>
+          {{ form.manager }}
+          {% if form.manager.errors %}
+          <div class="text-danger small">{{ form.manager.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <label for="id_manager_primary" class="form-label">사규관리 책임자</label>
+          {{ form.manager_primary }}
+          {% if form.manager_primary.errors %}
+          <div class="text-danger small">{{ form.manager_primary.errors.0 }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-3 mb-3">
+          <label for="id_scope" class="form-label">적용범위</label>
+          {{ form.scope }}
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <div class="form-check mt-4 pt-2">
+            {{ form.is_mandatory }}
+            <label class="form-check-label" for="id_is_mandatory">
+              의무준수
+            </label>
+          </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <div class="form-check mt-4 pt-2">
+            {{ form.is_public }}
+            <label class="form-check-label" for="id_is_public">
+              임직원 공개
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="id_effective_date" class="form-label">시행일</label>
+          {{ form.effective_date }}
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="id_expiry_date" class="form-label">정기검토예정일</label>
+          {{ form.expiry_date }}
+          <small class="text-muted">정기적으로 검토가 필요한 날짜를 입력하세요.</small>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="id_tags" class="form-label">태그</label>
+        {{ form.tags }}
+        {% if form.tags.errors %}
+        <div class="text-danger small">{{ form.tags.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <hr class="my-4">
+
+      <h5 class="mb-3"><i class="bi bi-file-earmark-text me-2"></i>사규 내용</h5>
+
+      <div class="mb-3">
+        <label for="id_original_file" class="form-label">사규 원본 파일</label>
+        {{ form.original_file }}
+        {% if form.original_file.errors %}
+        <div class="text-danger small">{{ form.original_file.errors.0 }}</div>
+        {% endif %}
+        <small class="text-muted">PDF, Word, HWP 등 원본 파일을 업로드하세요. (최대 10MB)</small>
+        {% if object.original_file %}
+        <div class="mt-2">
+          <span class="badge bg-success"><i class="bi bi-file-earmark-check me-1"></i>현재 파일: {{ object.original_file.name|cut:"regulations/original/" }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label for="id_content" class="form-label">규정 본문</label>
+        {{ form.content }}
+        {% if form.content.errors %}
+        <div class="text-danger small">{{ form.content.errors.0 }}</div>
+        {% endif %}
+        <small class="text-muted">규정의 전문을 입력하거나 붙여넣기 하세요.</small>
+      </div>
+
+      <div class="mb-3">
+        <label for="id_reference_url" class="form-label">사규 링크 (URL)</label>
+        {{ form.reference_url }}
+        {% if form.reference_url.errors %}
+        <div class="text-danger small">{{ form.reference_url.errors.0 }}</div>
+        {% endif %}
+        <small class="text-muted">사규가 게시된 웹페이지 주소를 입력하세요.</small>
+      </div>
+
+      <hr class="my-4">
+
+      <h5 class="mb-3">연관 사규</h5>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="id_parent_regulation" class="form-label">상위 사규</label>
+          {{ form.parent_regulation }}
+          <small class="text-muted">이 사규의 근거가 되는 상위 사규를 선택하세요.</small>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="id_related_regulations" class="form-label">관련 사규</label>
+          {{ form.related_regulations }}
+          <small class="text-muted">선택한 유형과 동일한 유형의 사규만 표시됩니다. Ctrl+클릭으로 여러 개 선택 가능</small>
+        </div>
+      </div>
+
+      <hr class="my-4">
+
+      <h5 class="mb-3"><i class="bi bi-shield-lock me-2"></i>접근 권한 설정</h5>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="id_access_level" class="form-label">접근 권한 <span class="text-danger">*</span></label>
+          {{ form.access_level }}
+          {% if form.access_level.errors %}
+          <div class="text-danger small">{{ form.access_level.errors.0 }}</div>
+          {% endif %}
+          <small class="text-muted">이 사규에 접근할 수 있는 대상을 지정합니다.</small>
+        </div>
+      </div>
+
+      <div id="access-level-options">
+        <div class="row mb-3" id="company-select" style="display: none;">
+          <div class="col-md-6">
+            <label for="id_allowed_companies" class="form-label">접근 가능 법인</label>
+            {{ form.allowed_companies }}
+            <small class="text-muted">Ctrl+클릭으로 여러 개 선택 가능</small>
+          </div>
+        </div>
+
+        <div class="row mb-3" id="department-select" style="display: none;">
+          <div class="col-md-6">
+            <label for="id_allowed_departments" class="form-label">접근 가능 부서</label>
+            {{ form.allowed_departments }}
+            <small class="text-muted">Ctrl+클릭으로 여러 개 선택 가능</small>
+          </div>
+        </div>
+
+        <div class="row mb-3" id="user-select" style="display: none;">
+          <div class="col-md-6">
+            <label for="id_allowed_users" class="form-label">접근 가능 직원</label>
+            {{ form.allowed_users }}
+            <small class="text-muted">Ctrl+클릭으로 여러 개 선택 가능</small>
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-4">
+
+      <div class="d-flex justify-content-end gap-2">
+        <a href="{% if is_create %}{% url 'regulations:list' %}{% else %}{% url 'regulations:detail' object.pk %}{% endif %}"
+          class="btn btn-secondary">
+          취소
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-check-lg me-1"></i>저장
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const categorySelect = document.getElementById('id_category');
+    const relatedRegulationsSelect = document.getElementById('id_related_regulations');
+    const parentRegulationSelect = document.getElementById('id_parent_regulation');
+
+    if (!categorySelect || !relatedRegulationsSelect) {
+      return;
+    }
+
+    // 현재 선택된 값 저장
+    const selectedRelatedValues = Array.from(relatedRegulationsSelect.selectedOptions).map(opt => opt.value);
+    const selectedParentValue = parentRegulationSelect ? parentRegulationSelect.value : null;
+
+    // 유형 변경 시 연관사규 필터링
+    function updateRelatedRegulations() {
+      const category = categorySelect.value;
+
+      if (!category) {
+        // 유형이 선택되지 않으면 모든 옵션 표시
+        Array.from(relatedRegulationsSelect.options).forEach(option => {
+          option.style.display = '';
+        });
+        return;
+      }
+
+      // AJAX로 해당 유형의 사규 목록 가져오기
+      const excludePk = '{{ object.pk|default:"" }}';
+      let url = '{% url "regulations:api_by_category" %}?category=' + encodeURIComponent(category);
+      if (excludePk) {
+        url += '&exclude_pk=' + excludePk;
+      }
+
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          const availableIds = new Set(data.regulations.map(r => r.id.toString()));
+
+          // 모든 옵션 숨기기
+          Array.from(relatedRegulationsSelect.options).forEach(option => {
+            if (option.value === '') {
+              // 빈 옵션은 유지
+              option.style.display = '';
+            } else if (availableIds.has(option.value)) {
+              // 해당 유형의 사규만 표시
+              option.style.display = '';
+            } else {
+              // 다른 유형의 사규는 숨기기
+              option.style.display = 'none';
+              // 선택되어 있던 경우 선택 해제
+              if (option.selected) {
+                option.selected = false;
+              }
+            }
+          });
+
+          // 상위 사규도 동일하게 필터링
+          if (parentRegulationSelect) {
+            Array.from(parentRegulationSelect.options).forEach(option => {
+              if (option.value === '') {
+                option.style.display = '';
+              } else if (availableIds.has(option.value)) {
+                option.style.display = '';
+              } else {
+                option.style.display = 'none';
+                if (option.selected && option.value !== selectedParentValue) {
+                  option.selected = false;
+                }
+              }
+            });
+          }
+        })
+        .catch(error => {
+          console.error('사규 목록을 가져오는 중 오류 발생:', error);
+        });
+    }
+
+    // 초기 로드 시 필터링
+    if (categorySelect.value) {
+      updateRelatedRegulations();
+    }
+
+    // 유형 변경 시 필터링
+    categorySelect.addEventListener('change', updateRelatedRegulations);
+
+    // 접근 권한 유형 변경 시 해당 선택 필드 표시/숨김
+    const accessLevelSelect = document.getElementById('id_access_level');
+    const companySelect = document.getElementById('company-select');
+    const departmentSelect = document.getElementById('department-select');
+    const userSelect = document.getElementById('user-select');
+
+    function updateAccessLevelOptions() {
+      const level = accessLevelSelect ? accessLevelSelect.value : 'ALL';
+
+      // 법인 선택은 항상 표시 (지정된 법인 선택 후 상세 권한 설정 흐름)
+      if (companySelect) companySelect.style.display = 'flex';
+
+      if (departmentSelect) departmentSelect.style.display = level === 'DEPARTMENTS' ? 'flex' : 'none';
+      if (userSelect) userSelect.style.display = level === 'USERS' ? 'flex' : 'none';
+    }
+
+    if (accessLevelSelect) {
+      updateAccessLevelOptions();
+      accessLevelSelect.addEventListener('change', updateAccessLevelOptions);
+    }
+  });
+</script>
+{% endblock %}

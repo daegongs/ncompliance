@@ -1,0 +1,684 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Home</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* 메인 레이아웃 (트리 + 본문) */
+  .browser-layout {
+    display: flex;
+    gap: 1rem;
+    height: calc(100vh - 200px);
+    min-height: 500px;
+  }
+  
+  .tree-panel {
+    width: 400px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .content-panel {
+    flex: 1;
+    background: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .content-panel-header {
+    padding: 1rem 1.25rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 600;
+    color: #1a365d;
+  }
+  
+  .content-panel-body {
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  .content-panel-body iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  
+  .content-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #718096;
+  }
+  
+  .content-placeholder i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  /* 카테고리 탭 스타일 */
+  .category-tabs {
+    display: flex;
+    gap: 0;
+    background: #fff;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 0.5rem;
+  }
+  
+  .category-tab {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    text-decoration: none;
+    color: #4a5568;
+    border-right: 1px solid #e2e8f0;
+    transition: all 0.2s;
+    font-weight: 500;
+    font-size: 0.85rem;
+  }
+  
+  .category-tab:last-child {
+    border-right: none;
+  }
+  
+  .category-tab:hover {
+    background: #f7fafc;
+    color: #2b6cb0;
+  }
+  
+  .category-tab.active {
+    background: linear-gradient(135deg, #2b6cb0 0%, #1a365d 100%);
+    color: #fff;
+  }
+  
+  .category-tab .count {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-top: 0.15rem;
+  }
+  
+  .category-tab.active .count {
+    color: #fff;
+  }
+  
+  /* 트리 구조 스타일 */
+  .tree-container {
+    background: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .tree-group-section {
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .tree-group-section:last-child {
+    border-bottom: none;
+  }
+  
+  .tree-group-header {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #1a365d;
+    background: #f8fafc;
+    transition: all 0.2s;
+    user-select: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  
+  .tree-group-header:hover {
+    background: #edf2f7;
+  }
+  
+  .tree-group-header .toggle-icon {
+    transition: transform 0.2s;
+    color: #718096;
+  }
+  
+  .tree-group-header.expanded .toggle-icon {
+    transform: rotate(90deg);
+  }
+  
+  .tree-group-header .group-name {
+    flex: 1;
+  }
+  
+  .tree-group-header .group-count {
+    background: #2b6cb0;
+    color: #fff;
+    padding: 0.1rem 0.4rem;
+    border-radius: 1rem;
+    font-size: 0.7rem;
+  }
+  
+  .tree-items {
+    display: none;
+    padding: 0;
+    background: #fff;
+  }
+  
+  .tree-items.show {
+    display: block;
+  }
+  
+  .tree-category-section {
+    border-top: 1px solid #e2e8f0;
+  }
+  
+  .tree-category-header-inner {
+    padding: 0.5rem 1rem 0.5rem 2rem;
+    background: #fafbfc;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #4a5568;
+    font-weight: 500;
+    font-size: 0.8rem;
+  }
+  
+  .tree-category-header-inner .category-count {
+    background: #e2e8f0;
+    color: #4a5568;
+    padding: 0.1rem 0.3rem;
+    border-radius: 1rem;
+    font-size: 0.65rem;
+    margin-left: auto;
+  }
+  
+  .tree-item {
+    padding: 0.4rem 1rem 0.4rem 3rem;
+    display: flex;
+    align-items: center;
+    border-top: 1px solid #f1f5f9;
+    transition: background 0.2s;
+    cursor: pointer;
+  }
+  
+  .tree-item:hover {
+    background: #f0f7ff;
+  }
+  
+  .tree-item.active {
+    background: #e6f0ff;
+    border-left: 3px solid #2b6cb0;
+  }
+  
+  .tree-item-title {
+    flex: 1;
+    color: #2d3748;
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+  
+  .tree-item:hover .tree-item-title {
+    color: #2b6cb0;
+  }
+  
+  /* 즐겨찾기 버튼 */
+  .favorite-btn {
+    background: none;
+    border: none;
+    padding: 0.2rem;
+    cursor: pointer;
+    color: #cbd5e0;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    margin-left: auto;
+  }
+  
+  .favorite-btn:hover {
+    color: #f6ad55;
+    transform: scale(1.15);
+  }
+  
+  .favorite-btn.active {
+    color: #f6ad55;
+  }
+  
+  .favorite-btn.active:hover {
+    color: #ed8936;
+  }
+  
+  /* 즐겨찾기 그룹 스타일 */
+  .tree-group-section.favorite-group .tree-group-header {
+    background: linear-gradient(135deg, #fef5e7 0%, #fff7ed 100%);
+    border-left: 3px solid #f6ad55;
+  }
+  
+  .tree-group-section.favorite-group .tree-group-header .group-count {
+    background: #f6ad55;
+  }
+  
+  .tree-group-section.favorite-group .tree-group-header:hover {
+    background: linear-gradient(135deg, #feebc8 0%, #fff5eb 100%);
+  }
+  
+  /* 빈 상태 */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #718096;
+  }
+  
+  .empty-state-img {
+    width: 180px;
+    height: auto;
+    margin-bottom: 1.5rem;
+    opacity: 0.85;
+  }
+  
+  .empty-state h5 {
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  
+  .empty-state p {
+    color: #718096;
+    font-size: 0.95rem;
+    margin-bottom: 0;
+  }
+  
+  .content-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  .content-placeholder .empty-state-img {
+    width: 200px;
+  }
+  
+  /* 본문 표시 영역 */
+  .content-display {
+    padding: 1.5rem;
+    overflow-y: auto;
+    height: 100%;
+    line-height: 1.8;
+    font-size: 0.95rem;
+  }
+  
+  .content-display pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: inherit;
+    margin: 0;
+    background: transparent;
+  }
+  
+  /* 본문 없음 안내 */
+  .empty-content-notice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  .empty-content-notice .empty-state-img {
+    width: 160px;
+    height: auto;
+    margin-bottom: 1.5rem;
+  }
+  
+  .empty-content-notice h5 {
+    color: #4a5568;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  
+  .empty-content-notice p {
+    color: #718096;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+  
+  .empty-content-notice p strong {
+    color: #4299e1;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-1">
+  <div></div>
+  <div class="d-flex gap-2">
+    {% if user.can_manage_regulations %}
+    <a href="{% url 'regulations:create' %}" class="btn btn-sm btn-primary">
+      <i class="bi bi-plus-lg me-1"></i>사규 등록
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="browser-layout">
+  <!-- 왼쪽: 트리 패널 -->
+  <div class="tree-panel">
+    <!-- 카테고리 탭 -->
+    <div class="category-tabs">
+      <a href="{% url 'dashboard:index' %}" class="category-tab {% if not current_category %}active{% endif %}">
+        <span>전체</span>
+        <span class="count">{{ total_count }}</span>
+      </a>
+      <a href="{% url 'dashboard:index' %}?category=POLICY" class="category-tab {% if current_category == 'POLICY' %}active{% endif %}">
+        <span>정책/방침</span>
+        <span class="count">{{ category_counts.POLICY }}</span>
+      </a>
+      <a href="{% url 'dashboard:index' %}?category=REGULATION" class="category-tab {% if current_category == 'REGULATION' %}active{% endif %}">
+        <span>규정</span>
+        <span class="count">{{ category_counts.REGULATION }}</span>
+      </a>
+      <a href="{% url 'dashboard:index' %}?category=GUIDELINE" class="category-tab {% if current_category == 'GUIDELINE' %}active{% endif %}">
+        <span>지침</span>
+        <span class="count">{{ category_counts.GUIDELINE }}</span>
+      </a>
+    </div>
+    
+    <!-- 트리 구조 사규 목록 -->
+    <div class="tree-container">
+      {% for group in grouped_regulations %}
+      <div class="tree-group-section {% if group.is_favorite_group %}favorite-group{% endif %}">
+        <div class="tree-group-header" onclick="toggleGroup(this)">
+          <i class="bi bi-chevron-right toggle-icon"></i>
+          {% if group.is_favorite_group %}
+          <i class="bi bi-star-fill text-warning me-1"></i>
+          {% else %}
+          <i class="bi bi-folder2 text-primary me-1"></i>
+          {% endif %}
+          <span class="group-name">{{ group.name }}</span>
+          <span class="group-count">{{ group.total }}</span>
+        </div>
+        <div class="tree-items">
+          {% for category_code, regs in group.categories.items %}
+          <div class="tree-category-section">
+            <div class="tree-category-header-inner">
+              {% if category_code == 'POLICY' %}
+              <i class="bi bi-bookmark-star text-primary"></i>
+              <span>정책/방침</span>
+              {% elif category_code == 'REGULATION' %}
+              <i class="bi bi-journal-bookmark text-info"></i>
+              <span>규정</span>
+              {% elif category_code == 'GUIDELINE' %}
+              <i class="bi bi-signpost-2 text-success"></i>
+              <span>지침</span>
+              {% endif %}
+              <span class="category-count">{{ regs|length }}</span>
+            </div>
+            {% for reg in regs %}
+            <div class="tree-item" data-reg-id="{{ reg.pk }}">
+              <span class="tree-item-title" onclick="showRegulation({{ reg.pk }}, '{{ reg.title|escapejs }}', '{{ reg.reference_url|default:''|escapejs }}')">
+                <i class="bi bi-file-earmark-text me-1 text-muted"></i>
+                {{ reg.title }}
+              </span>
+              <button class="favorite-btn {% if reg.pk in favorite_regulation_ids %}active{% endif %}" 
+                      onclick="event.stopPropagation(); toggleFavorite({{ reg.pk }}, this)" 
+                      title="{% if reg.pk in favorite_regulation_ids %}즐겨찾기 해제{% else %}즐겨찾기 추가{% endif %}">
+                <i class="bi {% if reg.pk in favorite_regulation_ids %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+              </button>
+            </div>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% empty %}
+      <div class="empty-state">
+        <svg class="empty-state-img" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- 귀여운 문서 캐릭터 -->
+          <rect x="50" y="20" width="100" height="120" rx="8" fill="#E2E8F0" stroke="#CBD5E0" stroke-width="2"/>
+          <rect x="65" y="40" width="50" height="6" rx="3" fill="#A0AEC0"/>
+          <rect x="65" y="55" width="70" height="4" rx="2" fill="#CBD5E0"/>
+          <rect x="65" y="65" width="60" height="4" rx="2" fill="#CBD5E0"/>
+          <rect x="65" y="75" width="65" height="4" rx="2" fill="#CBD5E0"/>
+          <!-- 얼굴 -->
+          <circle cx="80" cy="105" r="4" fill="#4A5568"/>
+          <circle cx="100" cy="105" r="4" fill="#4A5568"/>
+          <path d="M85 118 Q90 123 95 118" stroke="#4A5568" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <!-- 물음표 -->
+          <circle cx="155" cy="35" r="18" fill="#4299E1" opacity="0.2"/>
+          <text x="155" y="42" text-anchor="middle" fill="#3182CE" font-size="20" font-weight="bold">?</text>
+        </svg>
+        <h5>등록된 사규가 없습니다</h5>
+        <p>새로운 사규를 등록하거나 관리자에게 문의하세요.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  
+  <!-- 오른쪽: 본문 패널 -->
+  <div class="content-panel">
+    <div class="content-panel-header" id="contentHeader">
+      <i class="bi bi-file-earmark-text me-2"></i>
+      <span id="contentTitle">사규를 선택해주세요</span>
+    </div>
+    <div class="content-panel-body" id="contentBody">
+      <div class="content-placeholder" id="contentPlaceholder">
+        <svg class="empty-state-img" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- 귀여운 폴더 캐릭터 -->
+          <path d="M30 50 L30 130 C30 135 35 140 40 140 L160 140 C165 140 170 135 170 130 L170 60 C170 55 165 50 160 50 L100 50 L90 35 L40 35 C35 35 30 40 30 45 Z" fill="#F6E05E" stroke="#D69E2E" stroke-width="2"/>
+          <rect x="50" y="70" width="60" height="4" rx="2" fill="#D69E2E" opacity="0.5"/>
+          <rect x="50" y="82" width="80" height="4" rx="2" fill="#D69E2E" opacity="0.5"/>
+          <rect x="50" y="94" width="45" height="4" rx="2" fill="#D69E2E" opacity="0.5"/>
+          <!-- 얼굴 -->
+          <circle cx="75" cy="115" r="4" fill="#744210"/>
+          <circle cx="95" cy="115" r="4" fill="#744210"/>
+          <path d="M80 127 Q85 133 90 127" stroke="#744210" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <!-- 화살표 -->
+          <path d="M20 90 L10 90 L10 80" stroke="#4299E1" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <circle cx="10" cy="75" r="3" fill="#4299E1"/>
+        </svg>
+        <h5 style="color: #4a5568; margin-bottom: 0.5rem;">사규를 선택해주세요</h5>
+        <p style="color: #718096; font-size: 0.9rem;">왼쪽 트리에서 사규를 클릭하면<br>여기에 내용이 표시됩니다.</p>
+      </div>
+      <div class="content-placeholder" id="externalLinkNotice" style="display: none;">
+        <svg class="empty-state-img" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- 지구본 캐릭터 -->
+          <circle cx="100" cy="80" r="55" fill="#63B3ED" stroke="#3182CE" stroke-width="2"/>
+          <ellipse cx="100" cy="80" rx="55" ry="20" fill="none" stroke="#3182CE" stroke-width="1.5" opacity="0.5"/>
+          <ellipse cx="100" cy="80" rx="25" ry="55" fill="none" stroke="#3182CE" stroke-width="1.5" opacity="0.5"/>
+          <path d="M45 80 L155 80" stroke="#3182CE" stroke-width="1.5" opacity="0.5"/>
+          <!-- 대륙 모양 -->
+          <ellipse cx="80" cy="65" rx="15" ry="10" fill="#48BB78" opacity="0.7"/>
+          <ellipse cx="115" cy="90" rx="12" ry="8" fill="#48BB78" opacity="0.7"/>
+          <!-- 얼굴 -->
+          <circle cx="85" cy="75" r="4" fill="#1A365D"/>
+          <circle cx="105" cy="75" r="4" fill="#1A365D"/>
+          <path d="M90 95 Q100 102 110 95" stroke="#1A365D" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <!-- 외부 링크 아이콘 -->
+          <circle cx="155" cy="35" r="18" fill="#4299E1"/>
+          <path d="M150 40 L160 30 M160 30 L155 30 M160 30 L160 35" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <h5 style="color: #4a5568; margin-bottom: 0.5rem;">외부 페이지입니다</h5>
+        <p style="color: #718096; font-size: 0.9rem; margin-bottom: 1rem;">보안 정책으로 인해 이 페이지에서<br>직접 표시할 수 없습니다.</p>
+        <a id="externalLinkBtn" href="#" target="_blank" class="btn btn-primary">
+          <i class="bi bi-box-arrow-up-right me-1"></i>새 탭에서 열기
+        </a>
+      </div>
+      <div id="contentDisplay" class="content-display" style="display: none;"></div>
+      <iframe id="contentFrame" style="display: none;"></iframe>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleGroup(header) {
+  header.classList.toggle('expanded');
+  const items = header.nextElementSibling;
+  items.classList.toggle('show');
+}
+
+function showRegulation(regId, title, referenceUrl) {
+  // 모든 트리 아이템에서 active 클래스 제거
+  document.querySelectorAll('.tree-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  
+  // 클릭한 아이템에 active 클래스 추가
+  const clickedItem = document.querySelector(`.tree-item[data-reg-id="${regId}"]`);
+  if (clickedItem) {
+    clickedItem.classList.add('active');
+  }
+  
+  // 헤더 업데이트
+  document.getElementById('contentTitle').textContent = title;
+  
+  // 요소들
+  const placeholder = document.getElementById('contentPlaceholder');
+  const frame = document.getElementById('contentFrame');
+  const externalLink = document.getElementById('externalLinkNotice');
+  const contentDisplay = document.getElementById('contentDisplay');
+  
+  // 모두 숨기기
+  placeholder.style.display = 'none';
+  frame.style.display = 'none';
+  externalLink.style.display = 'none';
+  contentDisplay.style.display = 'none';
+  
+  // API에서 사규 본문 가져오기
+  fetch(`/api/regulation/${regId}/`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.content && data.content.trim()) {
+        // 본문이 있으면 표시
+        contentDisplay.innerHTML = `<pre>${escapeHtml(data.content)}</pre>`;
+        contentDisplay.style.display = 'block';
+      } else if (data.reference_url && isExternalUrl(data.reference_url)) {
+        // 외부 링크인 경우
+        externalLink.style.display = 'flex';
+        document.getElementById('externalLinkBtn').href = data.reference_url;
+      } else if (data.reference_url) {
+        // 내부 링크인 경우
+        frame.src = data.reference_url;
+        frame.style.display = 'block';
+      } else {
+        // 본문도 링크도 없는 경우
+        contentDisplay.innerHTML = `
+          <div class="empty-content-notice">
+            <svg class="empty-state-img" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- 귀여운 돋보기 캐릭터 -->
+              <circle cx="85" cy="70" r="45" fill="#E2E8F0" stroke="#A0AEC0" stroke-width="3"/>
+              <circle cx="85" cy="70" r="30" fill="#fff" stroke="#CBD5E0" stroke-width="2"/>
+              <line x1="118" y1="103" x2="150" y2="135" stroke="#A0AEC0" stroke-width="8" stroke-linecap="round"/>
+              <!-- 얼굴 -->
+              <circle cx="75" cy="65" r="4" fill="#4A5568"/>
+              <circle cx="95" cy="65" r="4" fill="#4A5568"/>
+              <path d="M78 80 Q85 75 92 80" stroke="#4A5568" stroke-width="2" stroke-linecap="round" fill="none"/>
+              <!-- 물음표 말풍선 -->
+              <ellipse cx="145" cy="45" rx="22" ry="18" fill="#63B3ED"/>
+              <polygon points="130,55 140,65 135,50" fill="#63B3ED"/>
+              <text x="145" y="50" text-anchor="middle" fill="white" font-size="18" font-weight="bold">?</text>
+            </svg>
+            <h5>아직 등록된 본문이 없어요</h5>
+            <p>해당 사규의 상세 내용이 준비 중입니다.<br>자세한 내용은 <strong>사규 담당 부서</strong>에 문의해 주세요.</p>
+          </div>
+        `;
+        contentDisplay.style.display = 'block';
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      contentDisplay.innerHTML = `
+        <div class="empty-content-notice">
+          <svg class="empty-state-img" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- 오류 아이콘 -->
+            <circle cx="100" cy="70" r="50" fill="#FED7D7" stroke="#FC8181" stroke-width="3"/>
+            <circle cx="85" cy="60" r="4" fill="#C53030"/>
+            <circle cx="115" cy="60" r="4" fill="#C53030"/>
+            <path d="M85 90 Q100 80 115 90" stroke="#C53030" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <text x="100" y="140" text-anchor="middle" fill="#C53030" font-size="14">Oops!</text>
+          </svg>
+          <h5>불러오기에 실패했어요</h5>
+          <p>잠시 후 다시 시도해 주세요.<br>문제가 계속되면 시스템 관리자에게 문의해 주세요.</p>
+        </div>
+      `;
+      contentDisplay.style.display = 'block';
+    });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function isExternalUrl(url) {
+  if (!url) return false;
+  try {
+    const urlObj = new URL(url, window.location.origin);
+    return urlObj.origin !== window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
+function toggleFavorite(regId, btn) {
+  fetch(`/api/favorite/${regId}/toggle/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCsrfToken(),
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    const icon = btn.querySelector('i');
+    if (data.is_favorite) {
+      btn.classList.add('active');
+      icon.classList.remove('bi-star');
+      icon.classList.add('bi-star-fill');
+      btn.title = '즐겨찾기 해제';
+    } else {
+      btn.classList.remove('active');
+      icon.classList.remove('bi-star-fill');
+      icon.classList.add('bi-star');
+      btn.title = '즐겨찾기 추가';
+    }
+    
+    // 페이지 새로고침하여 즐겨찾기 그룹 업데이트
+    setTimeout(() => {
+      location.reload();
+    }, 300);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('즐겨찾기 처리 중 오류가 발생했습니다.');
+  });
+}
+
+function getCsrfToken() {
+  const cookieValue = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('csrftoken='));
+  return cookieValue ? cookieValue.split('=')[1] : '';
+}
+</script>
+{% endblock %}

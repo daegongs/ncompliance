@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}제개정 이력 보고서 - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'reports:index' %}">보고서</a></li>
+<li class="breadcrumb-item active">제개정 이력</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="page-title mb-0"><i class="bi bi-clock-history me-2"></i>제개정 이력 보고서</h1>
+  <a href="{% url 'reports:history_export' %}?{{ request.GET.urlencode }}" class="btn btn-success">
+    <i class="bi bi-download me-1"></i>Excel 다운로드
+  </a>
+</div>
+
+{% if is_dept_manager %}
+<div class="alert alert-info mb-4">
+  <i class="bi bi-info-circle me-2"></i>
+  <strong>{{ user.department.name }}</strong> 소속 책임부서담당자로 로그인하셨습니다. 
+  본인이 담당하는 사규의 이력만 표시됩니다.
+</div>
+{% endif %}
+
+<!-- 필터 -->
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">시작일</label>
+        <input type="date" class="form-control" name="start_date" value="{{ selected_start }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">종료일</label>
+        <input type="date" class="form-control" name="end_date" value="{{ selected_end }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">변경유형</label>
+        <select class="form-select" name="change_type">
+          <option value="">전체</option>
+          <option value="CREATE" {% if selected_type == 'CREATE' %}selected{% endif %}>제정</option>
+          <option value="REVISE" {% if selected_type == 'REVISE' %}selected{% endif %}>개정</option>
+          <option value="ABOLISH" {% if selected_type == 'ABOLISH' %}selected{% endif %}>폐지</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary me-2">조회</button>
+        <a href="{% url 'reports:history' %}" class="btn btn-outline-secondary">초기화</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 결과 카운트 -->
+<div class="alert alert-info">
+  <i class="bi bi-info-circle me-2"></i>총 <strong>{{ total_count }}건</strong>의 이력이 조회되었습니다.
+</div>
+
+<!-- 목록 -->
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>사규코드</th>
+            <th>그룹</th>
+            <th>유형</th>
+            <th>사규명</th>
+            <th>버전</th>
+            <th>변경사유</th>
+            <th>작성자</th>
+            <th>등록일</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ver in versions %}
+          <tr>
+            <td>
+              <a href="{% url 'regulations:detail' ver.regulation.pk %}" class="fw-bold text-decoration-none">
+                {{ ver.regulation.code }}
+              </a>
+            </td>
+            <td>{{ ver.regulation.group|default:"-" }}</td>
+            <td>
+              <span class="badge {% if ver.change_type == 'CREATE' %}bg-success{% elif ver.change_type == 'REVISE' %}bg-primary{% else %}bg-secondary{% endif %}">
+                {{ ver.get_change_type_display }}
+              </span>
+            </td>
+            <td>{{ ver.regulation.title|truncatechars:30 }}</td>
+            <td>v{{ ver.version_number }}</td>
+            <td>{{ ver.change_reason|truncatechars:40 }}</td>
+            <td>{{ ver.created_by.get_full_name|default:"-" }}</td>
+            <td>{{ ver.created_at|date:"Y-m-d H:i" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-5">이력이 없습니다.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}사규 삭제 - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'regulations:list' %}">사규 목록</a></li>
+<li class="breadcrumb-item"><a href="{% url 'regulations:detail' object.pk %}">{{ object.code }}</a></li>
+<li class="breadcrumb-item active">삭제</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card border-danger">
+      <div class="card-header bg-danger text-white">
+        <i class="bi bi-exclamation-triangle me-2"></i>사규 삭제 확인
+      </div>
+      <div class="card-body">
+        <p class="mb-3">다음 사규를 삭제하시겠습니까?</p>
+        
+        <div class="alert alert-secondary">
+          <strong>{{ object.code }}</strong> - {{ object.title }}
+          <br>
+          <small class="text-muted">
+            분류: {{ object.get_category_display }} | 
+            상태: {{ object.get_status_display }} |
+            버전: v{{ object.current_version }}
+          </small>
+        </div>
+        
+        <div class="alert alert-warning">
+          <i class="bi bi-exclamation-circle me-2"></i>
+          <strong>주의:</strong> 사규를 삭제하면 모든 버전 이력과 첨부파일이 함께 삭제됩니다.
+          이 작업은 되돌릴 수 없습니다.
+        </div>
+        
+        <form method="post">
+          {% csrf_token %}
+          <div class="d-flex justify-content-end gap-2">
+            <a href="{% url 'regulations:detail' object.pk %}" class="btn btn-secondary">취소</a>
+            <button type="submit" class="btn btn-danger">
+              <i class="bi bi-trash me-1"></i>삭제
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+

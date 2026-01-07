@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if is_category_view %}{{ category_display }}{% else %}사규 목록{% endif %} - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'regulations:list' %}">사규 목록</a></li>
+{% if is_category_view %}
+<li class="breadcrumb-item active">{{ category_display }}</li>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="page-title mb-0">
+    <i class="bi bi-file-earmark-text me-2"></i>
+    {% if is_category_view %}{{ category_display }}{% else %}전체 사규 목록{% endif %}
+  </h1>
+  <div class="d-flex gap-2">
+    {% if user.can_manage_regulations %}
+    <a href="{% url 'regulations:create' %}" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-1"></i>사규 등록
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+{% if user.role == 'DEPT_MANAGER' and user.department %}
+<div class="alert alert-info mb-4">
+  <i class="bi bi-info-circle me-2"></i>
+  <strong>{{ user.department.name }}</strong> 소속 책임부서담당자로 로그인하셨습니다. 
+  본인이 담당하는 사규만 표시됩니다.
+</div>
+{% endif %}
+
+<!-- 검색 필터 -->
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="get" id="searchForm">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">검색어</label>
+          <input type="text" class="form-control" name="keyword" 
+                 value="{{ request.GET.keyword }}" placeholder="사규명, 코드, 담당자, 그룹 검색">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">유형</label>
+          <select class="form-select" name="category">
+            <option value="">전체</option>
+            <option value="POLICY" {% if request.GET.category == 'POLICY' %}selected{% endif %}>정책/방침</option>
+            <option value="REGULATION" {% if request.GET.category == 'REGULATION' %}selected{% endif %}>규정</option>
+            <option value="GUIDELINE" {% if request.GET.category == 'GUIDELINE' %}selected{% endif %}>지침</option>
+            <option value="MANUAL" {% if request.GET.category == 'MANUAL' %}selected{% endif %}>매뉴얼/가이드라인</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">상태</label>
+          <select class="form-select" name="status">
+            <option value="">전체</option>
+            <option value="ACTIVE" {% if request.GET.status == 'ACTIVE' %}selected{% endif %}>시행중</option>
+            <option value="ABOLISHED" {% if request.GET.status == 'ABOLISHED' %}selected{% endif %}>폐기</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">의무준수</label>
+          <select class="form-select" name="is_mandatory">
+            <option value="">전체</option>
+            <option value="mandatory" {% if request.GET.is_mandatory == 'mandatory' %}selected{% endif %}>의무</option>
+            <option value="non_mandatory" {% if request.GET.is_mandatory == 'non_mandatory' %}selected{% endif %}>비의무</option>
+            <option value="not_applicable" {% if request.GET.is_mandatory == 'not_applicable' %}selected{% endif %}>사규관리 비대상</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">임직원 공개</label>
+          <select class="form-select" name="is_public">
+            <option value="">전체</option>
+            <option value="all" {% if request.GET.is_public == 'all' %}selected{% endif %}>전체공개</option>
+            <option value="executive" {% if request.GET.is_public == 'executive' %}selected{% endif %}>임원공개</option>
+            <option value="private" {% if request.GET.is_public == 'private' %}selected{% endif %}>비공개</option>
+          </select>
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-search me-1"></i>검색
+          </button>
+        </div>
+      </div>
+      <div class="row g-3 mt-2">
+        <div class="col-md-3">
+          <label class="form-label">그룹</label>
+          <input type="text" class="form-control" name="group" 
+                 value="{{ request.GET.group }}" placeholder="그룹명 검색">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">담당부서</label>
+          <select class="form-select" name="responsible_dept">
+            <option value="">전체</option>
+            {% for dept in departments %}
+            <option value="{{ dept.pk }}" {% if request.GET.responsible_dept == dept.pk|stringformat:"s" %}selected{% endif %}>
+              {{ dept.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">담당자</label>
+          <input type="text" class="form-control" name="manager" 
+                 value="{{ request.GET.manager }}" placeholder="담당자명 검색">
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+          <a href="{% url 'regulations:list' %}" class="btn btn-outline-secondary w-100">초기화</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 검색 결과 -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>
+      <i class="bi bi-list-ul me-2"></i>
+      {% if is_category_view %}{{ category_display }} 결과{% else %}목록{% endif %}
+      <span class="badge bg-primary ms-2">{{ total_count }}건</span>
+    </span>
+    <a href="{% url 'reports:status_export' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-outline-success">
+      <i class="bi bi-download me-1"></i>Excel 다운로드
+    </a>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th style="width: 90px;">사규코드</th>
+            <th style="width: 70px;">그룹</th>
+            <th style="width: 220px;">사규명</th>
+            <th style="width: 50px; white-space: nowrap;">유형</th>
+            <th style="width: 45px; white-space: nowrap;">의무</th>
+            <th style="width: 150px;">담당부서</th>
+            <th style="width: 70px;">담당자</th>
+            <th style="width: 45px; white-space: nowrap;">상태</th>
+            <th style="width: 45px; white-space: nowrap;">공개</th>
+            <th style="width: 75px; white-space: nowrap;">시행일</th>
+            <th style="width: 45px;">링크</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for reg in regulations %}
+          <tr>
+            <td>
+              <a href="{% url 'regulations:detail' reg.pk %}" class="text-decoration-none fw-bold">
+                {{ reg.code }}
+              </a>
+            </td>
+            <td>{{ reg.group|default:"-" }}</td>
+            <td>
+              <a href="{% url 'regulations:detail' reg.pk %}" class="text-decoration-none text-dark">
+                {{ reg.title }}
+              </a>
+              {% if reg.is_review_due %}
+              <span class="badge bg-warning text-dark ms-1" title="정기검토 예정">
+                <i class="bi bi-clock"></i>
+              </span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge {{ reg.get_category_display_class }}">
+                {{ reg.get_category_display }}
+              </span>
+            </td>
+            <td>
+              {% if reg.is_mandatory %}
+              <span class="badge bg-danger">의무</span>
+              {% else %}
+              <span class="badge bg-secondary">비의무</span>
+              {% endif %}
+            </td>
+            <td>{{ reg.responsible_dept.name|default:"-" }}</td>
+            <td>{{ reg.manager|default:"-" }}</td>
+            <td>
+              <span class="badge {% if reg.status == 'ACTIVE' %}bg-success{% elif reg.status == 'DRAFT' %}bg-warning text-dark{% elif reg.status == 'REVIEW' %}bg-info{% else %}bg-secondary{% endif %}">
+                {{ reg.get_status_display }}
+              </span>
+            </td>
+            <td>
+              {% if reg.is_public %}
+              <span class="badge bg-success">공개</span>
+              {% else %}
+              <span class="badge bg-secondary">비공개</span>
+              {% endif %}
+            </td>
+            <td>{{ reg.effective_date|date:"Y-m-d"|default:"-" }}</td>
+            <td>
+              {% if reg.reference_url %}
+              <a href="{{ reg.reference_url }}" target="_blank" class="text-primary text-decoration-none">
+                Link
+              </a>
+              {% else %}
+              -
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="11" class="text-center text-muted py-5">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              검색 결과가 없습니다.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  {% if page_obj.has_other_pages %}
+  <div class="card-footer">
+    <nav aria-label="Page navigation">
+      <ul class="pagination justify-content-center mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+            <i class="bi bi-chevron-double-left"></i>
+          </a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+            <i class="bi bi-chevron-left"></i>
+          </a>
+        </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+            <i class="bi bi-chevron-right"></i>
+          </a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+            <i class="bi bi-chevron-double-right"></i>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

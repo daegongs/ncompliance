@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}버전 등록 - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'regulations:list' %}">사규 목록</a></li>
+<li class="breadcrumb-item"><a href="{% url 'regulations:detail' regulation.pk %}">{{ regulation.code }}</a></li>
+<li class="breadcrumb-item active">버전 등록</li>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">
+  <i class="bi bi-plus-circle me-2"></i>버전 등록
+</h1>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <strong>{{ regulation.code }}</strong> - {{ regulation.title }}
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          
+          {% if latest_version %}
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            현재 버전: <strong>v{{ latest_version.version_number }}</strong>
+            ({{ latest_version.get_change_type_display }}, {{ latest_version.created_at|date:"Y-m-d" }})
+          </div>
+          {% endif %}
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="id_version_number" class="form-label">버전번호 <span class="text-danger">*</span></label>
+              {{ form.version_number }}
+              {% if form.version_number.errors %}
+              <div class="text-danger small">{{ form.version_number.errors.0 }}</div>
+              {% endif %}
+              <small class="text-muted">예: 1.0, 1.1, 2.0</small>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label for="id_change_type" class="form-label">변경유형 <span class="text-danger">*</span></label>
+              {{ form.change_type }}
+              {% if form.change_type.errors %}
+              <div class="text-danger small">{{ form.change_type.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="id_change_reason" class="form-label">변경사유 <span class="text-danger">*</span></label>
+            {{ form.change_reason }}
+            {% if form.change_reason.errors %}
+            <div class="text-danger small">{{ form.change_reason.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="mb-3">
+            <label for="id_change_summary" class="form-label">변경내용 요약</label>
+            {{ form.change_summary }}
+            {% if form.change_summary.errors %}
+            <div class="text-danger small">{{ form.change_summary.errors.0 }}</div>
+            {% endif %}
+            <small class="text-muted">주요 변경 내용을 간략히 요약해 주세요.</small>
+          </div>
+          
+          <div class="mb-3">
+            <label for="id_content_file" class="form-label">첨부파일</label>
+            {{ form.content_file }}
+            {% if form.content_file.errors %}
+            <div class="text-danger small">{{ form.content_file.errors.0 }}</div>
+            {% endif %}
+            <small class="text-muted">허용 형식: PDF, DOCX, DOC, HWP, HWPX (최대 10MB)</small>
+          </div>
+          
+          <hr class="my-4">
+          
+          <div class="d-flex justify-content-end gap-2">
+            <a href="{% url 'regulations:detail' regulation.pk %}" class="btn btn-secondary">취소</a>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i>등록
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-lightbulb me-2"></i>버전 등록 안내
+      </div>
+      <div class="card-body">
+        <h6 class="text-primary">변경유형 설명</h6>
+        <ul class="small">
+          <li><strong>제정:</strong> 새로운 사규를 처음 만들 때</li>
+          <li><strong>개정:</strong> 기존 사규의 내용을 수정할 때</li>
+          <li><strong>폐지:</strong> 사규를 더 이상 사용하지 않을 때</li>
+        </ul>
+        
+        <h6 class="text-primary mt-3">버전 번호 규칙</h6>
+        <ul class="small">
+          <li><strong>주요 변경:</strong> 1.0 → 2.0</li>
+          <li><strong>경미한 변경:</strong> 1.0 → 1.1</li>
+        </ul>
+        
+        <div class="alert alert-warning small mb-0 mt-3">
+          <i class="bi bi-exclamation-triangle me-1"></i>
+          버전 등록 시 사규 상태가 자동으로 변경됩니다.
+          <br>- 제정: 시행중으로 변경
+          <br>- 폐지: 폐지로 변경
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+

@@ -1,0 +1,16 @@
+<li class="tree-item {{ item.obj.category }}">
+    <a href="{% url 'regulations:detail' item.obj.pk %}" class="tree-link">
+        <span class="reg-code me-2">[{{ item.obj.code }}]</span>
+        <span class="reg-title">{{ item.obj.title }}</span>
+        {% if item.children %}
+            <i class="bi bi-chevron-down ms-2 small text-muted"></i>
+        {% endif %}
+    </a>
+    {% if item.children %}
+        <ul class="list-unstyled child-list">
+            {% for child in item.children %}
+                {% include "dashboard/tree_item.html" with item=child %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>

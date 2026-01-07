@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}알림 등록 - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'notifications:list' %}">알림</a></li>
+<li class="breadcrumb-item active">알림 등록</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="page-title mb-0">
+    <i class="bi bi-bell-fill me-2"></i>알림 등록
+  </h1>
+  <a href="{% url 'notifications:list' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>목록으로
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <i class="bi bi-send me-2"></i>새 알림 발송
+  </div>
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="notification_type" class="form-label">알림 유형 <span class="text-danger">*</span></label>
+          <select class="form-select" id="notification_type" name="notification_type" required>
+            {% for value, label in type_choices %}
+            <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="target" class="form-label">발송 대상 <span class="text-danger">*</span></label>
+          <select class="form-select" id="target" name="target" required onchange="toggleTargetOptions()">
+            <option value="all">전체 사용자</option>
+            <option value="role">역할별</option>
+            <option value="user">특정 사용자</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="row mb-3" id="roleSelectDiv" style="display: none;">
+        <div class="col-12">
+          <label for="target_role" class="form-label">대상 역할</label>
+          <select class="form-select" id="target_role" name="target_role">
+            <option value="">-- 역할 선택 --</option>
+            {% for value, label in role_choices %}
+            <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      
+      <div class="row mb-3" id="userSelectDiv" style="display: none;">
+        <div class="col-12">
+          <label for="target_users" class="form-label">대상 사용자</label>
+          <select class="form-select" id="target_users" name="target_users" multiple size="5">
+            {% for user in users %}
+            <option value="{{ user.pk }}">{{ user.get_full_name|default:user.username }} ({{ user.username }})</option>
+            {% endfor %}
+          </select>
+          <small class="text-muted">Ctrl 또는 Shift를 누른 상태에서 클릭하여 여러 사용자를 선택할 수 있습니다.</small>
+        </div>
+      </div>
+      
+      <div class="mb-3">
+        <label for="title" class="form-label">제목 <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="title" name="title" required maxlength="200" placeholder="알림 제목을 입력하세요">
+      </div>
+      
+      <div class="mb-3">
+        <label for="message" class="form-label">내용 <span class="text-danger">*</span></label>
+        <textarea class="form-control" id="message" name="message" rows="5" required placeholder="알림 내용을 입력하세요"></textarea>
+      </div>
+      
+      <div class="d-flex justify-content-end gap-2">
+        <a href="{% url 'notifications:list' %}" class="btn btn-secondary">취소</a>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-send me-1"></i>발송하기
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleTargetOptions() {
+  const target = document.getElementById('target').value;
+  const roleDiv = document.getElementById('roleSelectDiv');
+  const userDiv = document.getElementById('userSelectDiv');
+  
+  roleDiv.style.display = target === 'role' ? 'block' : 'none';
+  userDiv.style.display = target === 'user' ? 'block' : 'none';
+  
+  // Required 속성 토글
+  document.getElementById('target_role').required = target === 'role';
+}
+
+// 페이지 로드 시 초기화
+document.addEventListener('DOMContentLoaded', toggleTargetOptions);
+</script>
+{% endblock %}
+

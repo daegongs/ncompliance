@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}변경 이력 - {{ regulation.title }} - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'regulations:list' %}">사규 목록</a></li>
+<li class="breadcrumb-item"><a href="{% url 'regulations:detail' regulation.pk %}">{{ regulation.code }}</a></li>
+<li class="breadcrumb-item active">변경 이력</li>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">
+  <i class="bi bi-clock-history me-2"></i>변경 이력
+</h1>
+
+<div class="card mb-4">
+  <div class="card-header">
+    <strong>{{ regulation.code }}</strong> - {{ regulation.title }}
+  </div>
+</div>
+
+<div class="timeline">
+  {% for version in versions %}
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h5 class="mb-1">
+            <span class="badge bg-primary me-2">v{{ version.version_number }}</span>
+            <span class="badge {% if version.change_type == 'CREATE' %}bg-success{% elif version.change_type == 'REVISE' %}bg-info{% else %}bg-secondary{% endif %}">
+              {{ version.get_change_type_display }}
+            </span>
+          </h5>
+          <p class="text-muted mb-2">
+            <i class="bi bi-person me-1"></i>{{ version.created_by.get_full_name|default:"-" }}
+            <span class="mx-2">|</span>
+            <i class="bi bi-calendar me-1"></i>{{ version.created_at|date:"Y년 m월 d일 H:i" }}
+          </p>
+        </div>
+        {% if version.content_file %}
+        <a href="{% url 'regulations:download' version.pk %}" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-download me-1"></i>다운로드
+        </a>
+        {% endif %}
+      </div>
+      
+      <hr>
+      
+      <h6 class="text-muted">변경 사유</h6>
+      <p>{{ version.change_reason }}</p>
+      
+      {% if version.change_summary %}
+      <h6 class="text-muted">변경 내용 요약</h6>
+      <p class="mb-0">{{ version.change_summary }}</p>
+      {% endif %}
+      
+      {% if version.approved_by %}
+      <hr>
+      <small class="text-muted">
+        <i class="bi bi-check-circle text-success me-1"></i>
+        승인: {{ version.approved_by.get_full_name }} ({{ version.approved_at|date:"Y-m-d" }})
+      </small>
+      {% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="card">
+    <div class="card-body text-center text-muted py-5">
+      <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+      버전 이력이 없습니다.
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+
+
+
+
+

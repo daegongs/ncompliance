@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}코드 관리 - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">코드 관리</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="page-title mb-0">
+    <i class="bi bi-code-square me-2"></i>공통코드 관리
+  </h1>
+  <a href="{% url 'regulations:code_create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>코드 등록
+  </a>
+</div>
+
+<!-- 검색 필터 -->
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">코드유형</label>
+        <select class="form-select" name="code_type">
+          <option value="">전체</option>
+          {% for value, label in code_type_choices %}
+          <option value="{{ value }}" {% if current_code_type == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">사용여부</label>
+        <select class="form-select" name="is_active">
+          <option value="">전체</option>
+          <option value="true" {% if current_is_active == 'true' %}selected{% endif %}>사용</option>
+          <option value="false" {% if current_is_active == 'false' %}selected{% endif %}>미사용</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">검색어</label>
+        <input type="text" class="form-control" name="keyword" value="{{ keyword }}" placeholder="코드, 코드명, 설명">
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary me-2">
+          <i class="bi bi-search me-1"></i>검색
+        </button>
+        <a href="{% url 'regulations:code_list' %}" class="btn btn-outline-secondary">초기화</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 코드 목록 -->
+{% for type_name, type_codes in grouped_codes.items %}
+<div class="card mb-3">
+  <div class="card-header bg-light">
+    <h6 class="mb-0">
+      <i class="bi bi-folder2 me-2"></i>{{ type_name }}
+      <span class="badge bg-secondary ms-2">{{ type_codes|length }}개</span>
+    </h6>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th style="width: 100px;">코드</th>
+            <th style="width: 150px;">코드명</th>
+            <th>설명</th>
+            <th style="width: 80px;">정렬순서</th>
+            <th style="width: 80px;">사용</th>
+            <th style="width: 80px;">시스템</th>
+            <th style="width: 120px;">관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for code in type_codes %}
+          <tr>
+            <td><code>{{ code.code }}</code></td>
+            <td>{{ code.name }}</td>
+            <td class="text-muted">{{ code.description|default:"-"|truncatechars:50 }}</td>
+            <td class="text-center">{{ code.sort_order }}</td>
+            <td class="text-center">
+              {% if code.is_active %}
+              <span class="badge bg-success">사용</span>
+              {% else %}
+              <span class="badge bg-secondary">미사용</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if code.is_system %}
+              <span class="badge bg-info">시스템</span>
+              {% else %}
+              <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'regulations:code_update' code.pk %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-pencil"></i>
+              </a>
+              {% if not code.is_system %}
+              <a href="{% url 'regulations:code_delete' code.pk %}" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash"></i>
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% empty %}
+<div class="card">
+  <div class="card-body text-center py-5">
+    <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+    <p class="text-muted mb-3">등록된 코드가 없습니다.</p>
+    <a href="{% url 'regulations:code_create' %}" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-1"></i>첫 번째 코드 등록하기
+    </a>
+  </div>
+</div>
+{% endfor %}
+
+<div class="mt-4">
+  <div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    <strong>코드 관리 안내</strong>
+    <ul class="mb-0 mt-2">
+      <li><strong>그룹</strong>: 사규가 속하는 조직/분류 (예: HR, 재무, 준법 등)</li>
+      <li><strong>분류</strong>: 사규의 유형 (정책/방침, 규정, 지침 등)</li>
+      <li><strong>상태</strong>: 사규의 시행 상태 (시행중, 폐지 등)</li>
+      <li><strong>시스템 코드</strong>는 삭제할 수 없으며, 시스템 동작에 필수적인 코드입니다.</li>
+    </ul>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}알림 설정 - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'notifications:list' %}">알림</a></li>
+<li class="breadcrumb-item active">설정</li>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title"><i class="bi bi-gear me-2"></i>알림 설정</h1>
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-bell me-2"></i>알림 수신 설정
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          
+          <div class="mb-4">
+            <h6 class="text-muted mb-3">알림 유형</h6>
+            
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" id="receive_change" name="receive_change"
+                     {% if setting.receive_change_notification %}checked{% endif %}>
+              <label class="form-check-label" for="receive_change">
+                <strong>제개정 알림</strong>
+                <br><small class="text-muted">사규가 제정, 개정, 폐지될 때 알림을 받습니다.</small>
+              </label>
+            </div>
+            
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" id="receive_expiry" name="receive_expiry"
+                     {% if setting.receive_expiry_notification %}checked{% endif %}>
+              <label class="form-check-label" for="receive_expiry">
+                <strong>만료예정 알림</strong>
+                <br><small class="text-muted">담당 사규의 정기검토 예정일이 다가올 때 알림을 받습니다.</small>
+              </label>
+            </div>
+            
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" id="receive_review" name="receive_review"
+                     {% if setting.receive_review_notification %}checked{% endif %}>
+              <label class="form-check-label" for="receive_review">
+                <strong>검토요청 알림</strong>
+                <br><small class="text-muted">사규 검토 요청이 접수될 때 알림을 받습니다.</small>
+              </label>
+            </div>
+          </div>
+          
+          <hr>
+          
+          <div class="mb-4">
+            <h6 class="text-muted mb-3">알림 방법</h6>
+            
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="email_notification" name="email_notification"
+                     {% if setting.email_notification %}checked{% endif %}>
+              <label class="form-check-label" for="email_notification">
+                <strong>이메일 알림</strong>
+                <br><small class="text-muted">중요 알림을 이메일로도 받습니다. ({{ user.email }})</small>
+              </label>
+            </div>
+          </div>
+          
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i>설정 저장
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+

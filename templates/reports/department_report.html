@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}부서별 보고서 - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'reports:index' %}">보고서</a></li>
+<li class="breadcrumb-item active">부서별</li>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title"><i class="bi bi-building me-2"></i>부서별 보고서</h1>
+
+<div class="row">
+  <!-- 부서 목록 -->
+  <div class="col-md-4 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-list me-2"></i>부서 목록
+      </div>
+      <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+          {% for dept in departments %}
+          <a href="?department={{ dept.pk }}" 
+             class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if selected_dept and selected_dept.pk == dept.pk %}active{% endif %}">
+            {{ dept.name }}
+            <span class="badge {% if selected_dept and selected_dept.pk == dept.pk %}bg-light text-primary{% else %}bg-primary{% endif %}">
+              {{ dept.regulation_count }}
+            </span>
+          </a>
+          {% empty %}
+          <div class="text-center text-muted py-4">부서가 없습니다.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 사규 목록 -->
+  <div class="col-md-8 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-file-earmark-text me-2"></i>
+        {% if selected_dept %}
+        {{ selected_dept.name }} 관장 사규
+        {% else %}
+        부서를 선택하세요
+        {% endif %}
+      </div>
+      <div class="card-body p-0">
+        {% if regulations %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>사규코드</th>
+                <th>사규명</th>
+                <th>분류</th>
+                <th>상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for reg in regulations %}
+              <tr>
+                <td>
+                  <a href="{% url 'regulations:detail' reg.pk %}" class="fw-bold text-decoration-none">
+                    {{ reg.code }}
+                  </a>
+                </td>
+                <td>{{ reg.title }}</td>
+                <td>
+                  <span class="badge {{ reg.get_category_display_class }}">
+                    {{ reg.get_category_display }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge {% if reg.status == 'ACTIVE' %}bg-success{% elif reg.status == 'DRAFT' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                    {{ reg.get_status_display }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-5">
+          {% if selected_dept %}
+          <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+          해당 부서의 관장 사규가 없습니다.
+          {% else %}
+          <i class="bi bi-hand-index fs-1 d-block mb-2"></i>
+          좌측에서 부서를 선택하세요.
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+

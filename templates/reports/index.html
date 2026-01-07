@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}보고서 - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">보고서</li>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title"><i class="bi bi-file-earmark-bar-graph me-2"></i>보고서</h1>
+
+<div class="row">
+  <div class="col-md-6 col-lg-3 mb-4">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <div class="mb-3">
+          <i class="bi bi-file-earmark-spreadsheet text-primary" style="font-size: 3rem;"></i>
+        </div>
+        <h5 class="card-title">사규 현황 보고서</h5>
+        <p class="card-text text-muted small">전사 사규 현황을 분류별, 상태별로 조회하고 Excel로 내보낼 수 있습니다.</p>
+        <a href="{% url 'reports:status' %}" class="btn btn-primary">
+          <i class="bi bi-arrow-right me-1"></i>이동
+        </a>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-6 col-lg-3 mb-4">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <div class="mb-3">
+          <i class="bi bi-clock-history text-info" style="font-size: 3rem;"></i>
+        </div>
+        <h5 class="card-title">제개정 이력 보고서</h5>
+        <p class="card-text text-muted small">기간별 사규 제정, 개정, 폐지 이력을 조회하고 관리할 수 있습니다.</p>
+        <a href="{% url 'reports:history' %}" class="btn btn-info">
+          <i class="bi bi-arrow-right me-1"></i>이동
+        </a>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-6 col-lg-3 mb-4">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <div class="mb-3">
+          <i class="bi bi-building text-success" style="font-size: 3rem;"></i>
+        </div>
+        <h5 class="card-title">부서별 보고서</h5>
+        <p class="card-text text-muted small">책임부서별 관장 사규 현황을 조회하고 관리할 수 있습니다.</p>
+        <a href="{% url 'reports:department' %}" class="btn btn-success">
+          <i class="bi bi-arrow-right me-1"></i>이동
+        </a>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-6 col-lg-3 mb-4">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <div class="mb-3">
+          <i class="bi bi-calendar-event text-warning" style="font-size: 3rem;"></i>
+        </div>
+        <h5 class="card-title">만료예정 보고서</h5>
+        <p class="card-text text-muted small">정기검토가 필요한 만료예정 사규 목록을 조회할 수 있습니다.</p>
+        <a href="{% url 'reports:expiry' %}" class="btn btn-warning">
+          <i class="bi bi-arrow-right me-1"></i>이동
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+

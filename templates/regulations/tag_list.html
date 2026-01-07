@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}태그 목록 - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'regulations:list' %}">사규 목록</a></li>
+<li class="breadcrumb-item active">태그</li>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title"><i class="bi bi-tags me-2"></i>태그 목록</h1>
+
+{% if is_dept_manager %}
+<div class="alert alert-info mb-4">
+  <i class="bi bi-info-circle me-2"></i>
+  <strong>{{ user.department.name }}</strong> 소속 책임부서담당자로 로그인하셨습니다. 
+  본인이 담당하는 사규의 태그만 표시됩니다.
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-body">
+    {% if tags %}
+    <div class="d-flex flex-wrap gap-2">
+      {% for tag in tags %}
+      <a href="{% url 'regulations:by_tag' tag.name %}" class="btn btn-outline-primary btn-lg">
+        <i class="bi bi-tag me-1"></i>{{ tag.name }}
+        <span class="badge bg-primary ms-1">{{ tag.regulation_count }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center text-muted py-5">
+      <i class="bi bi-tags fs-1 d-block mb-2"></i>
+      등록된 태그가 없습니다.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+

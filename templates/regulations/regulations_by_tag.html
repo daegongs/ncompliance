@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}#{{ tag.name }} - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'regulations:list' %}">사규 목록</a></li>
+<li class="breadcrumb-item"><a href="{% url 'regulations:tag_list' %}">태그</a></li>
+<li class="breadcrumb-item active">#{{ tag.name }}</li>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">
+  <i class="bi bi-tag me-2"></i>#{{ tag.name }}
+  <span class="badge bg-primary ms-2">{{ regulations.count }}건</span>
+</h1>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>사규코드</th>
+            <th>사규명</th>
+            <th>분류</th>
+            <th>상태</th>
+            <th>책임부서</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for reg in regulations %}
+          <tr>
+            <td>
+              <a href="{% url 'regulations:detail' reg.pk %}" class="fw-bold text-decoration-none">
+                {{ reg.code }}
+              </a>
+            </td>
+            <td>{{ reg.title }}</td>
+            <td>
+              <span class="badge {{ reg.get_category_display_class }}">
+                {{ reg.get_category_display }}
+              </span>
+            </td>
+            <td>
+              <span class="badge {% if reg.status == 'ACTIVE' %}bg-success{% elif reg.status == 'DRAFT' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                {{ reg.get_status_display }}
+              </span>
+            </td>
+            <td>{{ reg.responsible_dept.name|default:"-" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-5">
+              이 태그가 적용된 사규가 없습니다.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+

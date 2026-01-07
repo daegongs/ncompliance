@@ -1,0 +1,35 @@
+# Django Framework
+Django>=5.0
+django-crispy-forms>=2.1
+crispy-bootstrap5>=2024.2
+
+# Database
+# SQLite is built-in
+
+# Authentication
+social-auth-app-django>=5.4.0
+
+# File handling
+python-docx>=1.1.0
+PyPDF2>=3.0.1
+Pillow>=10.2.0
+
+# Excel/Report generation
+openpyxl>=3.1.2
+xlsxwriter>=3.1.9
+reportlab>=4.0.8
+
+# Utilities
+python-dateutil>=2.8.2
+pytz>=2024.1
+
+# Development
+django-debug-toolbar>=4.2.0
+
+# Background tasks (for notifications) - optional
+# django-celery-beat>=2.6.0
+# celery>=5.3.4
+# redis>=5.0.1
+
+# API (optional for future)
+djangorestframework>=3.14.0

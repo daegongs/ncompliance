@@ -1,0 +1,342 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ regulation.title }} - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'regulations:list' %}">사규 목록</a></li>
+<li class="breadcrumb-item active">{{ regulation.code }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="page-title mb-0">
+    <span class="badge {{ regulation.get_category_display_class }} me-2">{{ regulation.get_category_display }}</span>
+    {{ regulation.title }}
+  </h1>
+  {% if user.can_manage_regulations %}
+  <div class="btn-group">
+    <a href="{% url 'regulations:update' regulation.pk %}" class="btn btn-outline-primary">
+      <i class="bi bi-pencil me-1"></i>수정
+    </a>
+    <a href="{% url 'regulations:version_create' regulation.pk %}" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-1"></i>버전 등록
+    </a>
+    {% if user.role in 'COMPLIANCE,ADMIN' %}
+    <a href="{% url 'regulations:delete' regulation.pk %}" class="btn btn-outline-danger">
+      <i class="bi bi-trash me-1"></i>삭제
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<div class="row">
+  <!-- 기본 정보 -->
+  <div class="col-lg-8 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-info-circle me-2"></i>기본 정보
+      </div>
+      <div class="card-body">
+        <table class="table table-borderless">
+          <tbody>
+            <tr>
+              <th style="width: 150px;" class="text-muted">사규코드</th>
+              <td><strong>{{ regulation.code }}</strong></td>
+              <th style="width: 150px;" class="text-muted">현재 버전</th>
+              <td><span class="badge bg-primary">v{{ regulation.current_version }}</span></td>
+            </tr>
+            <tr>
+              <th class="text-muted">그룹</th>
+              <td><span class="badge bg-info text-dark">{{ regulation.group|default:"-" }}</span></td>
+              <th class="text-muted">상태</th>
+              <td>
+                <span
+                  class="badge {% if regulation.status == 'ACTIVE' %}bg-success{% elif regulation.status == 'DRAFT' %}bg-warning text-dark{% elif regulation.status == 'REVIEW' %}bg-info{% else %}bg-secondary{% endif %}">
+                  {{ regulation.get_status_display }}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <th class="text-muted">의무준수</th>
+              <td>
+                {% if regulation.is_mandatory %}
+                <span class="badge bg-danger">의무</span>
+                {% else %}
+                <span class="badge bg-secondary">비의무</span>
+                {% endif %}
+              </td>
+              <th class="text-muted">임직원 공개</th>
+              <td>
+                {% if regulation.is_public %}
+                <span class="badge bg-success">공개</span>
+                {% else %}
+                <span class="badge bg-secondary">비공개</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th class="text-muted">책임부서</th>
+              <td>{{ regulation.responsible_dept.name|default:"-" }}</td>
+              <th class="text-muted">사규관리 담당자</th>
+              <td>{{ regulation.manager|default:"-" }}</td>
+            </tr>
+            <tr>
+              <th class="text-muted">사규관리 책임자</th>
+              <td>{{ regulation.manager_primary|default:"-" }}</td>
+              <th></th>
+              <td></td>
+            </tr>
+            <tr>
+              <th class="text-muted">적용범위</th>
+              <td>{{ regulation.get_scope_display }}</td>
+              <th class="text-muted">시행일</th>
+              <td>{{ regulation.effective_date|date:"Y년 m월 d일"|default:"-" }}</td>
+            </tr>
+            <tr>
+              <th class="text-muted">정기검토예정일</th>
+              <td>
+                {% if regulation.expiry_date %}
+                {{ regulation.expiry_date|date:"Y년 m월 d일" }}
+                {% if regulation.is_review_due %}
+                <span class="badge bg-warning text-dark ms-1">검토 필요</span>
+                {% endif %}
+                {% else %}
+                -
+                {% endif %}
+              </td>
+              {% if regulation.abolished_date %}
+              <th class="text-muted">폐지일</th>
+              <td>{{ regulation.abolished_date|date:"Y년 m월 d일" }}</td>
+              {% else %}
+              <th></th>
+              <td></td>
+              {% endif %}
+            </tr>
+          </tbody>
+        </table>
+
+        {% if regulation.description %}
+        <hr>
+        <h6 class="text-muted mb-2">설명</h6>
+        <p class="mb-0">{{ regulation.description }}</p>
+        {% endif %}
+
+        {% if regulation.tags.exists %}
+        <hr>
+        <h6 class="text-muted mb-2">태그</h6>
+        {% for tag in regulation.tags.all %}
+        <a href="{% url 'regulations:by_tag' tag.name %}" class="badge bg-light text-dark me-1 text-decoration-none">
+          #{{ tag.name }}
+        </a>
+        {% endfor %}
+        {% endif %}
+
+        <hr>
+        <h6 class="text-muted mb-2"><i class="bi bi-shield-lock me-1"></i>접근 권한</h6>
+        <div class="d-flex align-items-center">
+          <span
+            class="badge {% if regulation.access_level == 'ALL' %}bg-success{% elif regulation.access_level == 'COMPANY' %}bg-info{% elif regulation.access_level == 'DEPARTMENT' %}bg-warning text-dark{% else %}bg-danger{% endif %} me-2">
+            {{ regulation.get_access_level_display }}
+          </span>
+          {% if regulation.access_level == 'COMPANY' and regulation.allowed_companies.exists %}
+          <small class="text-muted">
+            {% for company in regulation.allowed_companies.all %}
+            {{ company.name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          </small>
+          {% elif regulation.access_level == 'DEPARTMENT' and regulation.allowed_departments.exists %}
+          <small class="text-muted">
+            {% for dept in regulation.allowed_departments.all %}
+            {{ dept.name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          </small>
+          {% elif regulation.access_level == 'EMPLOYEE' and regulation.allowed_users.exists %}
+          <small class="text-muted">
+            {% for user in regulation.allowed_users.all %}
+            {{ user.get_full_name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          </small>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- 사규 내용 -->
+    <div class="card mt-4">
+      <div class="card-header">
+        <i class="bi bi-file-earmark-text me-2"></i>사규 내용
+      </div>
+      <div class="card-body">
+        <!-- 사규 원본 파일 -->
+        <h6 class="text-muted mb-2"><i class="bi bi-file-earmark-pdf me-1"></i>사규 원본 파일</h6>
+        {% if regulation.original_file %}
+        <div class="d-flex align-items-center mb-3">
+          <a href="{{ regulation.original_file.url }}" class="btn btn-outline-primary btn-sm" download>
+            <i class="bi bi-download me-1"></i>{{ regulation.original_file.name|cut:"regulations/original/" }}
+          </a>
+        </div>
+        {% else %}
+        <p class="text-muted mb-3">등록된 원본 파일이 없습니다.</p>
+        {% endif %}
+
+        <hr>
+
+        <!-- 사규 링크 -->
+        <h6 class="text-muted mb-2"><i class="bi bi-link-45deg me-1"></i>사규 링크 (URL)</h6>
+        {% if regulation.reference_url %}
+        <div class="mb-3">
+          <a href="{{ regulation.reference_url }}" target="_blank" class="text-primary">
+            <i class="bi bi-box-arrow-up-right me-1"></i>{{ regulation.reference_url }}
+          </a>
+        </div>
+        {% else %}
+        <p class="text-muted mb-3">등록된 링크가 없습니다.</p>
+        {% endif %}
+
+        <hr>
+
+        <!-- 규정 본문 -->
+        <h6 class="text-muted mb-2"><i class="bi bi-journal-text me-1"></i>규정 본문</h6>
+        {% if regulation.content %}
+        <div class="regulation-content p-3 bg-light rounded" style="max-height: 500px; overflow-y: auto; white-space: pre-wrap; line-height: 1.8;">{{ regulation.content }}</div>
+        {% else %}
+        <p class="text-muted mb-0">등록된 규정 본문이 없습니다.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 버전 이력 -->
+    <div class="card mt-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history me-2"></i>버전 이력</span>
+        <a href="{% url 'regulations:history' regulation.pk %}" class="btn btn-sm btn-outline-primary">전체보기</a>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>버전</th>
+                <th>유형</th>
+                <th>변경사유</th>
+                <th>작성자</th>
+                <th>등록일</th>
+                <th>첨부</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for version in versions %}
+              <tr>
+                <td><strong>v{{ version.version_number }}</strong></td>
+                <td>
+                  <span
+                    class="badge {% if version.change_type == 'CREATE' %}bg-success{% elif version.change_type == 'REVISE' %}bg-primary{% else %}bg-secondary{% endif %}">
+                    {{ version.get_change_type_display }}
+                  </span>
+                </td>
+                <td>{{ version.change_reason|truncatechars:50 }}</td>
+                <td>{{ version.created_by.get_full_name|default:"-" }}</td>
+                <td>{{ version.created_at|date:"Y-m-d" }}</td>
+                <td>
+                  {% if version.content_file %}
+                  <a href="{% url 'regulations:download' version.pk %}" class="btn btn-sm btn-outline-primary"
+                    title="다운로드">
+                    <i class="bi bi-download"></i>
+                  </a>
+                  {% else %}
+                  -
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                  버전 이력이 없습니다.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 사이드바 -->
+  <div class="col-lg-4">
+    <!-- 관련 정보 -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <i class="bi bi-link-45deg me-2"></i>관련 정보
+      </div>
+      <div class="card-body">
+        <h6 class="text-muted mb-2">상위 사규</h6>
+        {% if regulation.parent_regulation %}
+        <a href="{% url 'regulations:detail' regulation.parent_regulation.pk %}"
+          class="d-block text-decoration-none mb-3">
+          <span class="badge {{ regulation.parent_regulation.get_category_display_class }}">{{
+            regulation.parent_regulation.get_category_display }}</span>
+          {{ regulation.parent_regulation.code }}
+        </a>
+        {% else %}
+        <p class="text-muted mb-3">-</p>
+        {% endif %}
+
+        <h6 class="text-muted mb-2">하위 사규</h6>
+        {% if children %}
+        <ul class="list-unstyled mb-3">
+          {% for child in children %}
+          <li class="mb-1">
+            <a href="{% url 'regulations:detail' child.pk %}" class="text-decoration-none">
+              <span class="badge {{ child.get_category_display_class }}">{{ child.get_category_display }}</span>
+              {{ child.code }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted mb-3">-</p>
+        {% endif %}
+
+        <h6 class="text-muted mb-2">관련 사규</h6>
+        {% if related %}
+        <ul class="list-unstyled mb-0">
+          {% for rel in related %}
+          <li class="mb-1">
+            <a href="{% url 'regulations:detail' rel.pk %}" class="text-decoration-none">
+              <span class="badge {{ rel.get_category_display_class }}">{{ rel.get_category_display }}</span>
+              {{ rel.code }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted mb-0">-</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 메타 정보 -->
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-info-square me-2"></i>메타 정보
+      </div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between">
+          <span class="text-muted">작성자</span>
+          <strong>{{ regulation.created_by.get_full_name|default:"-" }}</strong>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <span class="text-muted">생성일</span>
+          <strong>{{ regulation.created_at|date:"Y-m-d H:i" }}</strong>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <span class="text-muted">최종수정일</span>
+          <strong>{{ regulation.updated_at|date:"Y-m-d H:i" }}</strong>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

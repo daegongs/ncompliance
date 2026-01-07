@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}사규 브라우징 - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">사규 브라우징</li>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title"><i class="bi bi-tree me-2"></i>전체 사규 브라우징</h1>
+        <p class="text-muted">전체 사규를 카테고리별 트리 구조로 확인하실 수 있습니다.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="accordion" id="categoryAccordion">
+            {% for code, category in categories.items %}
+            <div class="accordion-item shadow-sm border-0 mb-3 rounded overflow-hidden">
+                <h2 class="accordion-header" id="heading{{ code }}">
+                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} py-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ code }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ code }}">
+                        <div class="d-flex align-items-center">
+                            <i class="bi {% if code == 'POLICY' %}bi-journal-text text-danger{% elif code == 'REGULATION' %}bi-file-earmark-ruled text-primary{% elif code == 'GUIDELINE' %}bi-list-check text-success{% else %}bi-book text-secondary{% endif %} fs-3 me-3"></i>
+                            <div>
+                                <h4 class="h5 mb-0 fw-bold">{{ category.label }}</h4>
+                                <small class="text-muted">총 {{ category.items|length }}건의 주요 사규</small>
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div id="collapse{{ code }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ code }}" data-bs-parent="#categoryAccordion">
+                    <div class="accordion-body bg-light p-4">
+                        {% if category.items %}
+                            <div class="tree-container">
+                                <ul class="list-unstyled mb-0">
+                                    {% for item in category.items %}
+                                        {% include "dashboard/tree_item.html" with item=item %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% else %}
+                            <p class="text-center text-muted my-5">등록된 사규가 없습니다.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .tree-container {
+        position: relative;
+    }
+    .tree-item {
+        margin-bottom: 0.5rem;
+        position: relative;
+    }
+    .tree-link {
+        display: block;
+        padding: 0.75rem 1rem;
+        background: white;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #333;
+        transition: all 0.2s;
+        border-left: 4px solid transparent;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .tree-link:hover {
+        transform: translateX(5px);
+        background: #f8f9fa;
+        color: #0d6efd;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    .tree-item.POLICY > .tree-link { border-left-color: #dc3545; }
+    .tree-item.REGULATION > .tree-link { border-left-color: #0d6efd; }
+    .tree-item.GUIDELINE > .tree-link { border-left-color: #198754; }
+    .tree-item.MANUAL > .tree-link { border-left-color: #6c757d; }
+
+    .child-list {
+        margin-left: 2.5rem;
+        border-left: 1px dashed #dee2e6;
+        padding-left: 1rem;
+        margin-top: 0.5rem;
+    }
+    .reg-code {
+        font-family: monospace;
+        font-weight: bold;
+        font-size: 0.85rem;
+        opacity: 0.7;
+    }
+    .reg-title {
+        font-weight: 500;
+    }
+    .accordion-button:not(.collapsed) {
+        background-color: white;
+        color: inherit;
+        box-shadow: none;
+    }
+    .accordion-button:focus {
+        box-shadow: none;
+    }
+</style>
+{% endblock %}
