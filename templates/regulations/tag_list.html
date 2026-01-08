@@ -195,7 +195,7 @@
 </div>
 {% endif %}
 
-{% if tags %}
+    {% if tags %}
 <!-- 통계 & 검색 -->
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
   <div class="stats-row mb-0">
@@ -334,12 +334,12 @@
         {% if tag.name == '감사' or tag.name == '내부감사' or tag.name == '외부감사' or tag.name == '검사' or tag.name == '점검' or tag.name == '모니터링' %}
         <a href="{% url 'regulations:by_tag' tag.name %}" class="tag-item tag-red" data-tag="{{ tag.name }}">
           {{ tag.name }}<span class="tag-count">{{ tag.regulation_count }}</span>
-        </a>
+      </a>
         {% endif %}
       {% endfor %}
       <span class="empty-tags" style="display:none;">태그 없음</span>
     </div>
-  </div>
+    </div>
 
   <!-- 기타 -->
   <div class="tag-row other" data-group="other">
@@ -353,7 +353,7 @@
         <a href="{% url 'regulations:by_tag' tag.name %}" class="tag-item {% cycle 'tag-purple' 'tag-pink' 'tag-cyan' %}" data-tag="{{ tag.name }}">
           {{ tag.name }}<span class="tag-count">{{ tag.regulation_count }}</span>
         </a>
-        {% endif %}
+    {% endif %}
       {% endfor %}
       <span class="empty-tags" style="display:none;">태그 없음</span>
     </div>

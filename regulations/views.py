@@ -45,7 +45,7 @@ class RegulationListView(LoginRequiredMixin, ListView):
                 Q(responsible_dept=user.department) |
                 Q(manager__icontains=user.get_full_name()) |
                 Q(manager_primary__icontains=user.get_full_name())
-            )
+        )
 
         # 검색 필터 적용
         keyword = self.request.GET.get("keyword", "").strip()

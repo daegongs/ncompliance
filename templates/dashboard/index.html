@@ -123,7 +123,7 @@
     flex: 1;
     overflow-y: auto;
   }
-  
+
   .tree-group-section {
     border-bottom: 1px solid #e2e8f0;
   }
@@ -292,7 +292,7 @@
     margin-bottom: 0.5rem;
     font-weight: 600;
   }
-  
+
   .empty-state p {
     color: #718096;
     font-size: 0.95rem;
@@ -399,8 +399,8 @@
         <span>지침</span>
         <span class="count">{{ category_counts.GUIDELINE }}</span>
       </a>
-    </div>
-    
+  </div>
+
     <!-- 트리 구조 사규 목록 -->
     <div class="tree-container">
       {% for group in grouped_regulations %}
@@ -414,7 +414,7 @@
           {% endif %}
           <span class="group-name">{{ group.name }}</span>
           <span class="group-count">{{ group.total }}</span>
-        </div>
+      </div>
         <div class="tree-items">
           {% for category_code, regs in group.categories.items %}
           <div class="tree-category-section">
@@ -430,7 +430,7 @@
               <span>지침</span>
               {% endif %}
               <span class="category-count">{{ regs|length }}</span>
-            </div>
+      </div>
             {% for reg in regs %}
             <div class="tree-item" data-reg-id="{{ reg.pk }}">
               <span class="tree-item-title" onclick="showRegulation({{ reg.pk }}, '{{ reg.title|escapejs }}', '{{ reg.reference_url|default:''|escapejs }}')">
@@ -442,10 +442,10 @@
                       title="{% if reg.pk in favorite_regulation_ids %}즐겨찾기 해제{% else %}즐겨찾기 추가{% endif %}">
                 <i class="bi {% if reg.pk in favorite_regulation_ids %}bi-star-fill{% else %}bi-star{% endif %}"></i>
               </button>
-            </div>
+    </div>
             {% endfor %}
-          </div>
-          {% endfor %}
+      </div>
+              {% endfor %}
         </div>
       </div>
       {% empty %}
@@ -471,7 +471,7 @@
       {% endfor %}
     </div>
   </div>
-  
+
   <!-- 오른쪽: 본문 패널 -->
   <div class="content-panel">
     <div class="content-panel-header d-flex justify-content-between align-items-center" id="contentHeader">

@@ -56,14 +56,14 @@ def index(request):
     favorite_regulation_ids = set(
         Favorite.objects.filter(user=request.user).values_list('regulation_id', flat=True)
     )
-    
+
     # 즐겨찾기된 사규 필터링 (현재 카테고리 조건 적용)
     favorite_regulations = filtered_regulations.filter(pk__in=favorite_regulation_ids)
 
     # 그룹 → 카테고리 순서로 사규 정리 (트리 구조용, 매뉴얼/가이드라인 제외)
     grouped_regulations = {}
     category_order = ['POLICY', 'REGULATION', 'GUIDELINE']
-    
+
     # 그룹 노출 순서 정의
     group_order = [
         '이사회', 'HR', '재무', '구매', '준법', '반부패', 
@@ -92,7 +92,7 @@ def index(request):
         return (len(group_order), grp_name)
     
     sorted_groups = sorted(grouped_regulations.keys(), key=get_group_sort_key)
-    
+
     # (그룹명, 카테고리별 사규, 총건수) 리스트로 구성
     grouped_list = []
     

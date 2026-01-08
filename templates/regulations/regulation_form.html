@@ -52,11 +52,11 @@
 
       <div class="row">
         <div class="col-md-8 mb-3">
-          <label for="id_title" class="form-label">사규명 <span class="text-danger">*</span></label>
-          {{ form.title }}
-          {% if form.title.errors %}
-          <div class="text-danger small">{{ form.title.errors.0 }}</div>
-          {% endif %}
+        <label for="id_title" class="form-label">사규명 <span class="text-danger">*</span></label>
+        {{ form.title }}
+        {% if form.title.errors %}
+        <div class="text-danger small">{{ form.title.errors.0 }}</div>
+        {% endif %}
         </div>
         <div class="col-md-4 mb-3">
           <label for="id_group" class="form-label">그룹 <span class="text-danger">*</span></label>
