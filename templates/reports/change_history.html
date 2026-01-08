@@ -66,7 +66,7 @@
           <tr>
             <th>사규코드</th>
             <th>그룹</th>
-            <th>유형</th>
+            <th>분류</th>
             <th>사규명</th>
             <th>버전</th>
             <th>변경사유</th>
@@ -84,8 +84,8 @@
             </td>
             <td>{{ ver.regulation.group|default:"-" }}</td>
             <td>
-              <span class="badge {% if ver.change_type == 'CREATE' %}bg-success{% elif ver.change_type == 'REVISE' %}bg-primary{% else %}bg-secondary{% endif %}">
-                {{ ver.get_change_type_display }}
+              <span class="badge {% if ver.regulation.category == 'POLICY' %}bg-danger{% elif ver.regulation.category == 'REGULATION' %}bg-primary{% elif ver.regulation.category == 'GUIDELINE' %}bg-info{% else %}bg-secondary{% endif %}">
+                {{ ver.regulation.get_category_display }}
               </span>
             </td>
             <td>{{ ver.regulation.title|truncatechars:30 }}</td>
@@ -105,9 +105,3 @@
   </div>
 </div>
 {% endblock %}
-
-
-
-
-
-

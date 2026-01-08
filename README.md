@@ -171,16 +171,16 @@ ncompliance/
 
 ## 🧪 테스트 계정
 
-개발/테스트용 계정 (비밀번호: `test1234`)
+개발/테스트용 계정 (공통 비밀번호: `123!`)
 
-| 아이디 | 역할 | 부서 |
-|--------|------|------|
-| `admin` | 관리자 | - |
-| `compliance` | 준법지원인 | - |
-| `hr_manager` | 책임부서담당 | 인사팀 |
-| `fin_manager` | 책임부서담당 | 재무팀 |
-| `it_manager` | 책임부서담당 | IT팀 |
-| `user` | 일반 | - |
+| 아이디 | 역할 | 이름 | 부서 |
+|--------|------|------|------|
+| `admin` | 시스템관리자 (ADMIN) | 시스템 관리자 | 법무팀 |
+| `compliance` | 준법지원인 (COMPLIANCE) | 준법 지원 | 법무팀 |
+| `hr_manager` | 책임부서담당 (DEPT_MANAGER) | 인사 담당자 | 인사팀 |
+| `fin_manager` | 책임부서담당 (DEPT_MANAGER) | 재무 담당자 | 재무팀 |
+| `it_manager` | 책임부서담당 (DEPT_MANAGER) | IT 담당자 | IT팀 |
+| `user` | 일반사용자 (GENERAL) | 홍길동 사원 | 사업팀 |
 
 ---
 

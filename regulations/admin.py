@@ -180,3 +180,48 @@ class CommonCodeAdmin(admin.ModelAdmin):
         queryset.filter(is_system=False).delete()
 
 
+
+    list_per_page = 50
+    raw_id_fields = ['parent']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('기본 정보', {
+            'fields': ('code_type', 'code', 'name', 'description')
+        }),
+        ('설정', {
+            'fields': ('sort_order', 'is_active', 'is_system', 'parent')
+        }),
+        ('시스템 정보', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['activate_codes', 'deactivate_codes']
+    
+    @admin.action(description='선택한 코드 활성화')
+    def activate_codes(self, request, queryset):
+        queryset.update(is_active=True)
+    
+    @admin.action(description='선택한 코드 비활성화')
+    def deactivate_codes(self, request, queryset):
+        queryset.filter(is_system=False).update(is_active=False)
+    
+    def delete_model(self, request, obj):
+        """시스템 코드는 삭제 불가"""
+        if obj.is_system:
+            from django.contrib import messages
+            messages.error(request, f"시스템 코드 '{obj.name}'은(는) 삭제할 수 없습니다.")
+            return
+        super().delete_model(request, obj)
+    
+    def delete_queryset(self, request, queryset):
+        """시스템 코드는 삭제 불가"""
+        system_codes = queryset.filter(is_system=True)
+        if system_codes.exists():
+            from django.contrib import messages
+            messages.warning(request, "시스템 코드는 삭제되지 않았습니다.")
+        queryset.filter(is_system=False).delete()
+
+

@@ -474,9 +474,14 @@
   
   <!-- 오른쪽: 본문 패널 -->
   <div class="content-panel">
-    <div class="content-panel-header" id="contentHeader">
-      <i class="bi bi-file-earmark-text me-2"></i>
-      <span id="contentTitle">사규를 선택해주세요</span>
+    <div class="content-panel-header d-flex justify-content-between align-items-center" id="contentHeader">
+      <div>
+        <i class="bi bi-file-earmark-text me-2"></i>
+        <span id="contentTitle">사규를 선택해주세요</span>
+      </div>
+      <a href="#" id="regulationLink" class="btn btn-link text-decoration-none" style="display: none; color: #e67e22; font-weight: 600; font-size: 1.1rem;" target="_blank">
+        >> 사규 바로가기
+      </a>
     </div>
     <div class="content-panel-body" id="contentBody">
       <div class="content-placeholder" id="contentPlaceholder">
@@ -551,6 +556,9 @@ function showRegulation(regId, title, referenceUrl) {
   // 헤더 업데이트
   document.getElementById('contentTitle').textContent = title;
   
+  // 사규 바로가기 링크 업데이트
+  const regulationLink = document.getElementById('regulationLink');
+  
   // 요소들
   const placeholder = document.getElementById('contentPlaceholder');
   const frame = document.getElementById('contentFrame');
@@ -567,6 +575,14 @@ function showRegulation(regId, title, referenceUrl) {
   fetch(`/api/regulation/${regId}/`)
     .then(response => response.json())
     .then(data => {
+      // 사규 바로가기 링크 설정
+      if (data.reference_url) {
+        regulationLink.href = data.reference_url;
+        regulationLink.style.display = 'inline-block';
+      } else {
+        regulationLink.style.display = 'none';
+      }
+      
       if (data.content && data.content.trim()) {
         // 본문이 있으면 표시
         contentDisplay.innerHTML = `<pre>${escapeHtml(data.content)}</pre>`;
@@ -606,6 +622,7 @@ function showRegulation(regId, title, referenceUrl) {
     })
     .catch(error => {
       console.error('Error:', error);
+      regulationLink.style.display = 'none';
       contentDisplay.innerHTML = `
         <div class="empty-content-notice">
           <svg class="empty-state-img" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">

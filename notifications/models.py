@@ -3,6 +3,7 @@
 Notification models for nCompliance
 """
 
+import uuid
 from django.db import models
 from django.conf import settings
 
@@ -39,6 +40,8 @@ class Notification(models.Model):
     is_read = models.BooleanField('읽음여부', default=False)
     read_at = models.DateTimeField('읽은시간', null=True, blank=True)
     created_at = models.DateTimeField('생성일', auto_now_add=True)
+    batch_id = models.UUIDField('발송ID', null=True, blank=True, db_index=True,
+                                 help_text='같은 발송 건을 식별하는 ID')
 
     class Meta:
         verbose_name = '알림'

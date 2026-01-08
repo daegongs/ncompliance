@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}알림 수정 - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'notifications:list' %}">알림</a></li>
+<li class="breadcrumb-item active">수정</li>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title"><i class="bi bi-pencil me-2"></i>알림 수정</h1>
+
+{% if recipient_count > 1 %}
+<div class="alert alert-warning">
+  <i class="bi bi-exclamation-triangle me-2"></i>
+  <strong>일괄 수정 안내:</strong> 이 알림은 <strong>{{ recipient_count }}명</strong>에게 발송된 알림입니다. 
+  수정 시 모든 수신자의 알림이 함께 수정됩니다.
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      
+      <div class="mb-3">
+        <label for="notification_type" class="form-label">알림 유형</label>
+        <select class="form-select" id="notification_type" name="notification_type">
+          {% for value, label in type_choices %}
+          <option value="{{ value }}" {% if notification.notification_type == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="mb-3">
+        <label for="title" class="form-label">제목 <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="title" name="title" 
+               value="{{ notification.title }}" required>
+      </div>
+      
+      <div class="mb-3">
+        <label for="message" class="form-label">내용 <span class="text-danger">*</span></label>
+        <textarea class="form-control" id="message" name="message" rows="5" required>{{ notification.message }}</textarea>
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label">수신자</label>
+        <input type="text" class="form-control" value="{{ notification.user.get_full_name }} ({{ notification.user.username }})" disabled>
+        <small class="text-muted">수신자는 변경할 수 없습니다.</small>
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label">생성일시</label>
+        <input type="text" class="form-control" value="{{ notification.created_at|date:'Y-m-d H:i' }}" disabled>
+      </div>
+      
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-check-lg me-1"></i>저장
+        </button>
+        <a href="{% url 'notifications:list' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-x-lg me-1"></i>취소
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+

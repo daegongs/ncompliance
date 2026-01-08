@@ -422,9 +422,3 @@ def export_expiry_excel(request):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     
     return response
-
-
-
-
-
-

@@ -2,6 +2,7 @@
 알림 뷰
 """
 
+import uuid
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
@@ -16,6 +17,11 @@ from accounts.models import User
 def is_admin(user):
     """시스템 관리자 여부 확인"""
     return user.is_superuser or (hasattr(user, 'role') and user.role == 'ADMIN')
+
+
+def is_admin_or_compliance(user):
+    """시스템 관리자 또는 준법지원인 여부 확인"""
+    return user.is_superuser or (hasattr(user, 'role') and user.role in ['ADMIN', 'COMPLIANCE'])
 
 
 @login_required
@@ -134,9 +140,9 @@ def unread_count(request):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_admin_or_compliance)
 def notification_create(request):
-    """알림 등록 (관리자 전용)"""
+    """알림 등록 (관리자/준법지원인 전용)"""
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
         message = request.POST.get('message', '').strip()
@@ -159,7 +165,8 @@ def notification_create(request):
         else:
             users = User.objects.filter(is_active=True)
         
-        # 알림 생성
+        # 알림 생성 (동일한 batch_id로 묶음)
+        batch_id = uuid.uuid4()
         created_count = 0
         for user in users:
             Notification.objects.create(
@@ -167,6 +174,7 @@ def notification_create(request):
                 notification_type=notification_type,
                 title=title,
                 message=message,
+                batch_id=batch_id,
             )
             created_count += 1
         
@@ -186,21 +194,85 @@ def notification_create(request):
 
 
 @login_required
-@user_passes_test(is_admin)
-def notification_delete(request, pk):
-    """알림 삭제 (관리자 전용)"""
+@user_passes_test(is_admin_or_compliance)
+def notification_update(request, pk):
+    """알림 수정 (관리자/준법지원인 전용) - 같은 발송 건 전체 수정"""
     notification = get_object_or_404(Notification, pk=pk)
     
     if request.method == 'POST':
-        notification.delete()
-        messages.success(request, '알림이 삭제되었습니다.')
+        title = request.POST.get('title', '').strip()
+        message_text = request.POST.get('message', '').strip()
+        notification_type = request.POST.get('notification_type', notification.notification_type)
+        
+        if not title or not message_text:
+            messages.error(request, '제목과 내용은 필수 입력 항목입니다.')
+            return redirect('notifications:update', pk=pk)
+        
+        # batch_id가 있으면 같은 발송 건의 모든 알림 수정
+        if notification.batch_id:
+            updated_count = Notification.objects.filter(
+                batch_id=notification.batch_id
+            ).update(
+                title=title,
+                message=message_text,
+                notification_type=notification_type,
+            )
+            messages.success(request, f'같은 발송 건의 알림 {updated_count}건이 수정되었습니다.')
+        else:
+            # batch_id가 없으면 개별 알림만 수정
+            notification.title = title
+            notification.message = message_text
+            notification.notification_type = notification_type
+            notification.save()
+            messages.success(request, '알림이 수정되었습니다.')
+        
+        return redirect('notifications:list')
+    
+    # GET 요청 - 같은 발송 건의 수신자 수 조회
+    type_choices = Notification.TYPE_CHOICES
+    recipient_count = 1
+    if notification.batch_id:
+        recipient_count = Notification.objects.filter(batch_id=notification.batch_id).count()
+    
+    return render(request, 'notifications/notification_update.html', {
+        'notification': notification,
+        'type_choices': type_choices,
+        'recipient_count': recipient_count,
+    })
+
+
+@login_required
+@user_passes_test(is_admin_or_compliance)
+def notification_delete(request, pk):
+    """알림 삭제 (관리자/준법지원인 전용) - 같은 발송 건 전체 삭제"""
+    notification = get_object_or_404(Notification, pk=pk)
+    
+    if request.method == 'POST':
+        # batch_id가 있으면 같은 발송 건의 모든 알림 삭제
+        if notification.batch_id:
+            deleted_count, _ = Notification.objects.filter(
+                batch_id=notification.batch_id
+            ).delete()
+            messages.success(request, f'같은 발송 건의 알림 {deleted_count}건이 삭제되었습니다.')
+        else:
+            # batch_id가 없으면 개별 알림만 삭제
+            notification.delete()
+            messages.success(request, '알림이 삭제되었습니다.')
         
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': True})
         
         return redirect('notifications:list')
     
-    return redirect('notifications:list')
+    # GET 요청 - 같은 발송 건의 수신자 수 조회
+    recipient_count = 1
+    if notification.batch_id:
+        recipient_count = Notification.objects.filter(batch_id=notification.batch_id).count()
+    
+    return render(request, 'notifications/notification_delete.html', {
+        'notification': notification,
+        'recipient_count': recipient_count,
+    })
 
 
 

@@ -398,11 +398,13 @@ def tag_list(request):
         ).distinct().annotate(
             regulation_count=Count("regulations", filter=Q(regulations__in=my_regulations))
         ).order_by("-regulation_count")
+        total_regulations = my_regulations.count()
     else:
         # 다른 권한은 모든 태그 표시
         tags = RegulationTag.objects.annotate(
             regulation_count=Count("regulations")
         ).order_by("-regulation_count")
+        total_regulations = Regulation.objects.count()
 
     return render(
         request,
@@ -410,6 +412,7 @@ def tag_list(request):
         {
             "tags": tags,
             "is_dept_manager": user.role == 'DEPT_MANAGER',
+            "total_regulations": total_regulations,
         },
     )
 

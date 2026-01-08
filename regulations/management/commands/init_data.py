@@ -78,9 +78,8 @@ class Command(BaseCommand):
                 'is_superuser': True,
             }
         )
-        if created:
-            admin.set_password('admin123!')
-            admin.save()
+        admin.set_password('123!')
+        admin.save()
         users.append(admin)
         
         # 준법지원인
@@ -96,9 +95,8 @@ class Command(BaseCommand):
                 'position': '준법지원인',
             }
         )
-        if created:
-            compliance.set_password('user123!')
-            compliance.save()
+        compliance.set_password('123!')
+        compliance.save()
         users.append(compliance)
         
         # 부서 담당자들
@@ -120,9 +118,8 @@ class Command(BaseCommand):
                     'department': dept,
                 }
             )
-            if created:
-                user.set_password('user123!')
-                user.save()
+            user.set_password('123!')
+            user.save()
             users.append(user)
         
         # 일반 사용자
@@ -137,9 +134,8 @@ class Command(BaseCommand):
                 'department': departments[6],
             }
         )
-        if created:
-            general.set_password('user123!')
-            general.save()
+        general.set_password('123!')
+        general.save()
         users.append(general)
         
         return users

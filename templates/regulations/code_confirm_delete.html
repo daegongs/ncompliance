@@ -42,3 +42,47 @@
 </div>
 {% endblock %}
 
+
+{% block title %}코드 삭제 - 사규관리 시스템{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'regulations:code_list' %}">코드 관리</a></li>
+<li class="breadcrumb-item active">코드 삭제</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header bg-danger text-white">
+        <i class="bi bi-exclamation-triangle me-2"></i>코드 삭제 확인
+      </div>
+      <div class="card-body text-center py-4">
+        <i class="bi bi-trash fs-1 text-danger d-block mb-3"></i>
+        <h5>정말 삭제하시겠습니까?</h5>
+        <p class="text-muted">
+          <strong>[{{ code_obj.get_code_type_display }}]</strong> {{ code_obj.name }} ({{ code_obj.code }})
+        </p>
+        <p class="text-danger small">
+          <i class="bi bi-exclamation-circle me-1"></i>
+          이 작업은 되돌릴 수 없습니다.
+        </p>
+        
+        <form method="post" class="mt-4">
+          {% csrf_token %}
+          <div class="d-flex justify-content-center gap-2">
+            <a href="{% url 'regulations:code_list' %}" class="btn btn-secondary">
+              <i class="bi bi-x-lg me-1"></i>취소
+            </a>
+            <button type="submit" class="btn btn-danger">
+              <i class="bi bi-trash me-1"></i>삭제
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

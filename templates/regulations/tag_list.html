@@ -7,8 +7,185 @@
 <li class="breadcrumb-item active">태그</li>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+  /* 통계 카드 */
+  .stats-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .stat-card {
+    background: #fff;
+    border-radius: 0.75rem;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .stat-card .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #4c51bf;
+  }
+  
+  .stat-card .stat-label {
+    font-size: 0.85rem;
+    color: #718096;
+  }
+  
+  /* 검색 */
+  .tag-search {
+    margin-bottom: 1.5rem;
+  }
+  
+  .tag-search input {
+    border-radius: 0.5rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid #e2e8f0;
+    max-width: 300px;
+  }
+  
+  .tag-search input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.15);
+  }
+  
+  /* 태그 테이블 */
+  .tag-table {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+  
+  .tag-row {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background 0.2s;
+  }
+  
+  .tag-row:last-child {
+    border-bottom: none;
+  }
+  
+  .tag-row:hover {
+    background: #f7fafc;
+  }
+  
+  /* 카테고리 라벨 (왼쪽 컬럼) */
+  .tag-category {
+    width: 160px;
+    min-width: 160px;
+    padding: 0.875rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-right: 3px solid;
+    background: #f8fafc;
+  }
+  
+  .tag-category i {
+    font-size: 1rem;
+  }
+  
+  /* 카테고리 색상 */
+  .tag-row.board .tag-category { color: #4c51bf; border-color: #5a67d8; background: #ebf4ff; }
+  .tag-row.hr .tag-category { color: #2b6cb0; border-color: #3182ce; background: #ebf8ff; }
+  .tag-row.finance .tag-category { color: #285e61; border-color: #319795; background: #e6fffa; }
+  .tag-row.compliance .tag-category { color: #276749; border-color: #38a169; background: #f0fff4; }
+  .tag-row.security .tag-category { color: #975a16; border-color: #d69e2e; background: #fffff0; }
+  .tag-row.procurement .tag-category { color: #c05621; border-color: #dd6b20; background: #fffaf0; }
+  .tag-row.audit .tag-category { color: #c53030; border-color: #e53e3e; background: #fff5f5; }
+  .tag-row.other .tag-category { color: #6b46c1; border-color: #805ad5; background: #faf5ff; }
+  
+  /* 태그 목록 (오른쪽 컬럼) */
+  .tag-list {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  /* 태그 아이템 */
+  .tag-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 1rem;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  
+  .tag-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  
+  .tag-item i {
+    font-size: 0.7rem;
+  }
+  
+  .tag-count {
+    background: rgba(255,255,255,0.35);
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  
+  /* 태그 색상 */
+  .tag-indigo { background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%); color: #fff; }
+  .tag-blue { background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: #fff; }
+  .tag-teal { background: linear-gradient(135deg, #38b2ac 0%, #319795 100%); color: #fff; }
+  .tag-green { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: #fff; }
+  .tag-yellow { background: linear-gradient(135deg, #ecc94b 0%, #d69e2e 100%); color: #744210; }
+  .tag-orange { background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); color: #fff; }
+  .tag-red { background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%); color: #fff; }
+  .tag-purple { background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%); color: #fff; }
+  .tag-pink { background: linear-gradient(135deg, #ed64a6 0%, #d53f8c 100%); color: #fff; }
+  .tag-cyan { background: linear-gradient(135deg, #4fd1c5 0%, #38b2ac 100%); color: #fff; }
+  
+  /* 빈 상태 */
+  .empty-tags {
+    color: #a0aec0;
+    font-style: italic;
+    font-size: 0.85rem;
+  }
+  
+  /* 빈 전체 상태 */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #fff;
+    border-radius: 0.75rem;
+  }
+  
+  .empty-state i {
+    font-size: 4rem;
+    color: #cbd5e0;
+    margin-bottom: 1rem;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1 class="page-title"><i class="bi bi-tags me-2"></i>태그 목록</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="page-title mb-0"><i class="bi bi-tags-fill me-2"></i>태그 관리</h1>
+</div>
 
 {% if is_dept_manager %}
 <div class="alert alert-info mb-4">
@@ -18,29 +195,222 @@
 </div>
 {% endif %}
 
-<div class="card">
-  <div class="card-body">
-    {% if tags %}
-    <div class="d-flex flex-wrap gap-2">
-      {% for tag in tags %}
-      <a href="{% url 'regulations:by_tag' tag.name %}" class="btn btn-outline-primary btn-lg">
-        <i class="bi bi-tag me-1"></i>{{ tag.name }}
-        <span class="badge bg-primary ms-1">{{ tag.regulation_count }}</span>
-      </a>
-      {% endfor %}
+{% if tags %}
+<!-- 통계 & 검색 -->
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+  <div class="stats-row mb-0">
+    <div class="stat-card">
+      <div class="stat-value">{{ tags|length }}</div>
+      <div class="stat-label">전체 태그</div>
     </div>
-    {% else %}
-    <div class="text-center text-muted py-5">
-      <i class="bi bi-tags fs-1 d-block mb-2"></i>
-      등록된 태그가 없습니다.
+    <div class="stat-card">
+      <div class="stat-value">{{ total_regulations }}</div>
+      <div class="stat-label">전체 사규</div>
     </div>
-    {% endif %}
+  </div>
+  <div class="tag-search mb-0">
+    <input type="text" id="tagSearchInput" class="form-control" placeholder="🔍 태그 검색..." onkeyup="filterTags()">
   </div>
 </div>
+
+<!-- 태그 테이블 -->
+<div class="tag-table">
+  <!-- 이사회·지배구조 -->
+  <div class="tag-row board" data-group="board">
+    <div class="tag-category">
+      <i class="bi bi-diagram-3"></i>
+      <span>이사회·지배구조</span>
+    </div>
+    <div class="tag-list">
+      {% for tag in tags %}
+        {% if tag.name == '이사회' or tag.name == '주주총회' or tag.name == '경영' or tag.name == '지배구조' or tag.name == '이사' or tag.name == '감사위원회' or tag.name == '위원회' %}
+        <a href="{% url 'regulations:by_tag' tag.name %}" class="tag-item tag-indigo" data-tag="{{ tag.name }}">
+          {{ tag.name }}<span class="tag-count">{{ tag.regulation_count }}</span>
+        </a>
+        {% endif %}
+      {% endfor %}
+      <span class="empty-tags" style="display:none;">태그 없음</span>
+    </div>
+  </div>
+
+  <!-- 인사·HR -->
+  <div class="tag-row hr" data-group="hr">
+    <div class="tag-category">
+      <i class="bi bi-people-fill"></i>
+      <span>인사·HR</span>
+    </div>
+    <div class="tag-list">
+      {% for tag in tags %}
+        {% if tag.name == '인사' or tag.name == '채용' or tag.name == '평가' or tag.name == '보상' or tag.name == '교육' or tag.name == '복리후생' or tag.name == '급여' or tag.name == '근무' or tag.name == '휴가' or tag.name == '퇴직' or tag.name == '징계' %}
+        <a href="{% url 'regulations:by_tag' tag.name %}" class="tag-item tag-blue" data-tag="{{ tag.name }}">
+          {{ tag.name }}<span class="tag-count">{{ tag.regulation_count }}</span>
+        </a>
+        {% endif %}
+      {% endfor %}
+      <span class="empty-tags" style="display:none;">태그 없음</span>
+    </div>
+  </div>
+
+  <!-- 재무·회계 -->
+  <div class="tag-row finance" data-group="finance">
+    <div class="tag-category">
+      <i class="bi bi-currency-dollar"></i>
+      <span>재무·회계</span>
+    </div>
+    <div class="tag-list">
+      {% for tag in tags %}
+        {% if tag.name == '재무' or tag.name == '회계' or tag.name == '세무' or tag.name == '자금' or tag.name == '예산' or tag.name == '결산' or tag.name == '투자' or tag.name == '자산' or tag.name == '비용' or tag.name == '매출' %}
+        <a href="{% url 'regulations:by_tag' tag.name %}" class="tag-item tag-teal" data-tag="{{ tag.name }}">
+          {{ tag.name }}<span class="tag-count">{{ tag.regulation_count }}</span>
+        </a>
+        {% endif %}
+      {% endfor %}
+      <span class="empty-tags" style="display:none;">태그 없음</span>
+    </div>
+  </div>
+
+  <!-- 컴플라이언스·준법 -->
+  <div class="tag-row compliance" data-group="compliance">
+    <div class="tag-category">
+      <i class="bi bi-shield-check"></i>
+      <span>컴플라이언스·준법</span>
+    </div>
+    <div class="tag-list">
+      {% for tag in tags %}
+        {% if tag.name == '준법' or tag.name == '윤리' or tag.name == '내부통제' or tag.name == '반부패' or tag.name == '공정거래' or tag.name == '규제' or tag.name == '법률' or tag.name == '계약' or tag.name == '소송' or tag.name == '분쟁' %}
+        <a href="{% url 'regulations:by_tag' tag.name %}" class="tag-item tag-green" data-tag="{{ tag.name }}">
+          {{ tag.name }}<span class="tag-count">{{ tag.regulation_count }}</span>
+        </a>
+        {% endif %}
+      {% endfor %}
+      <span class="empty-tags" style="display:none;">태그 없음</span>
+    </div>
+  </div>
+
+  <!-- 보안·정보보호 -->
+  <div class="tag-row security" data-group="security">
+    <div class="tag-category">
+      <i class="bi bi-lock-fill"></i>
+      <span>보안·정보보호</span>
+    </div>
+    <div class="tag-list">
+      {% for tag in tags %}
+        {% if tag.name == '보안' or tag.name == '개인정보' or tag.name == '정보보호' or tag.name == '사이버보안' or tag.name == 'IT' or tag.name == '시스템' or tag.name == '네트워크' or tag.name == '데이터' %}
+        <a href="{% url 'regulations:by_tag' tag.name %}" class="tag-item tag-yellow" data-tag="{{ tag.name }}">
+          {{ tag.name }}<span class="tag-count">{{ tag.regulation_count }}</span>
+        </a>
+        {% endif %}
+      {% endfor %}
+      <span class="empty-tags" style="display:none;">태그 없음</span>
+    </div>
+  </div>
+
+  <!-- 구매·조달 -->
+  <div class="tag-row procurement" data-group="procurement">
+    <div class="tag-category">
+      <i class="bi bi-cart-check"></i>
+      <span>구매·조달</span>
+    </div>
+    <div class="tag-list">
+      {% for tag in tags %}
+        {% if tag.name == '구매' or tag.name == '조달' or tag.name == '입찰' or tag.name == '공급' or tag.name == '협력사' or tag.name == '외주' %}
+        <a href="{% url 'regulations:by_tag' tag.name %}" class="tag-item tag-orange" data-tag="{{ tag.name }}">
+          {{ tag.name }}<span class="tag-count">{{ tag.regulation_count }}</span>
+        </a>
+        {% endif %}
+      {% endfor %}
+      <span class="empty-tags" style="display:none;">태그 없음</span>
+    </div>
+  </div>
+
+  <!-- 감사·내부감사 -->
+  <div class="tag-row audit" data-group="audit">
+    <div class="tag-category">
+      <i class="bi bi-search"></i>
+      <span>감사·내부감사</span>
+    </div>
+    <div class="tag-list">
+      {% for tag in tags %}
+        {% if tag.name == '감사' or tag.name == '내부감사' or tag.name == '외부감사' or tag.name == '검사' or tag.name == '점검' or tag.name == '모니터링' %}
+        <a href="{% url 'regulations:by_tag' tag.name %}" class="tag-item tag-red" data-tag="{{ tag.name }}">
+          {{ tag.name }}<span class="tag-count">{{ tag.regulation_count }}</span>
+        </a>
+        {% endif %}
+      {% endfor %}
+      <span class="empty-tags" style="display:none;">태그 없음</span>
+    </div>
+  </div>
+
+  <!-- 기타 -->
+  <div class="tag-row other" data-group="other">
+    <div class="tag-category">
+      <i class="bi bi-collection"></i>
+      <span>기타</span>
+    </div>
+    <div class="tag-list">
+      {% for tag in tags %}
+        {% if tag.name != '이사회' and tag.name != '주주총회' and tag.name != '경영' and tag.name != '지배구조' and tag.name != '이사' and tag.name != '감사위원회' and tag.name != '위원회' and tag.name != '인사' and tag.name != '채용' and tag.name != '평가' and tag.name != '보상' and tag.name != '교육' and tag.name != '복리후생' and tag.name != '급여' and tag.name != '근무' and tag.name != '휴가' and tag.name != '퇴직' and tag.name != '징계' and tag.name != '재무' and tag.name != '회계' and tag.name != '세무' and tag.name != '자금' and tag.name != '예산' and tag.name != '결산' and tag.name != '투자' and tag.name != '자산' and tag.name != '비용' and tag.name != '매출' and tag.name != '준법' and tag.name != '윤리' and tag.name != '내부통제' and tag.name != '반부패' and tag.name != '공정거래' and tag.name != '규제' and tag.name != '법률' and tag.name != '계약' and tag.name != '소송' and tag.name != '분쟁' and tag.name != '보안' and tag.name != '개인정보' and tag.name != '정보보호' and tag.name != '사이버보안' and tag.name != 'IT' and tag.name != '시스템' and tag.name != '네트워크' and tag.name != '데이터' and tag.name != '구매' and tag.name != '조달' and tag.name != '입찰' and tag.name != '공급' and tag.name != '협력사' and tag.name != '외주' and tag.name != '감사' and tag.name != '내부감사' and tag.name != '외부감사' and tag.name != '검사' and tag.name != '점검' and tag.name != '모니터링' %}
+        <a href="{% url 'regulations:by_tag' tag.name %}" class="tag-item {% cycle 'tag-purple' 'tag-pink' 'tag-cyan' %}" data-tag="{{ tag.name }}">
+          {{ tag.name }}<span class="tag-count">{{ tag.regulation_count }}</span>
+        </a>
+        {% endif %}
+      {% endfor %}
+      <span class="empty-tags" style="display:none;">태그 없음</span>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<div class="empty-state">
+  <i class="bi bi-tags"></i>
+  <h5 class="text-muted">등록된 태그가 없습니다</h5>
+  <p class="text-muted">사규에 태그를 추가하면 여기에 표시됩니다.</p>
+</div>
+{% endif %}
 {% endblock %}
 
+{% block extra_js %}
+<script>
+function filterTags() {
+  const searchText = document.getElementById('tagSearchInput').value.toLowerCase();
+  const tagItems = document.querySelectorAll('.tag-item');
+  const tagRows = document.querySelectorAll('.tag-row');
+  
+  tagItems.forEach(item => {
+    const tagName = item.getAttribute('data-tag').toLowerCase();
+    item.style.display = tagName.includes(searchText) ? 'inline-flex' : 'none';
+  });
+  
+  // 빈 행 처리
+  tagRows.forEach(row => {
+    const tagList = row.querySelector('.tag-list');
+    const visibleTags = tagList.querySelectorAll('.tag-item[style="display: inline-flex"], .tag-item:not([style*="display: none"])');
+    const emptyMsg = tagList.querySelector('.empty-tags');
+    
+    let visibleCount = 0;
+    tagList.querySelectorAll('.tag-item').forEach(tag => {
+      if (tag.style.display !== 'none') visibleCount++;
+    });
+    
+    if (visibleCount === 0) {
+      emptyMsg.style.display = 'inline';
+      row.style.opacity = '0.5';
+    } else {
+      emptyMsg.style.display = 'none';
+      row.style.opacity = '1';
+    }
+  });
+}
 
-
-
-
-
+// 페이지 로드 시 빈 행 숨기기
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.tag-row').forEach(row => {
+    const tagList = row.querySelector('.tag-list');
+    const tagCount = tagList.querySelectorAll('.tag-item').length;
+    if (tagCount === 0) {
+      row.style.display = 'none';
+    }
+  });
+});
+</script>
+{% endblock %}

@@ -408,21 +408,25 @@
         <span>만료예정</span>
       </a>
       
-      <!-- 시스템 관리 메뉴 (시스템 관리자 전용) -->
-      {% if user.is_superuser or user.role == 'ADMIN' %}
+      <!-- 시스템 관리 메뉴 (시스템 관리자/준법지원인) -->
+      {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'COMPLIANCE' %}
       <div class="nav-section mt-3">시스템 관리</div>
+      {% if user.is_superuser or user.role == 'ADMIN' %}
       <a href="{% url 'regulations:code_list' %}" class="nav-link {% if request.resolver_match.url_name == 'code_list' %}active{% endif %}">
         <i class="bi bi-code-square"></i>
         <span>코드 관리</span>
       </a>
+      {% endif %}
       <a href="{% url 'notifications:create' %}" class="nav-link {% if request.resolver_match.url_name == 'create' and request.resolver_match.app_name == 'notifications' %}active{% endif %}">
         <i class="bi bi-megaphone"></i>
         <span>알림 발송</span>
       </a>
+      {% if user.is_superuser or user.role == 'ADMIN' %}
       <a href="{% url 'admin:index' %}" class="nav-link" target="_blank">
         <i class="bi bi-gear"></i>
         <span>Django 관리자</span>
       </a>
+      {% endif %}
       {% endif %}
       
       <!-- 설정 메뉴 (모든 권한) -->
